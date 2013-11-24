@@ -1,0 +1,25 @@
+{
+	"name": "naonaox1126/vizualizer_shop",
+	"description": "Shop Extension for Vizualizer",
+	"keywords": ["PHP", "Framework", "MySQL", "Extension"],
+	"type": "framework",
+	"license": "Apache v2",
+	"homepage": "https://github.com/NAONAOx1126/VizualizerShop",
+	 "minimum-stability" : "dev",
+	"authors": [
+		{
+			"name": "NAONAOx1126",
+			"email": "info@sweetberry.jp"
+		}
+	],
+    "require": {
+    	"php": ">=5.3.0",
+        "naonaox1126/vizualizer": ">=1.0.0"
+    },
+    "require-dev": {
+        "naonaox1126/vizualizer": "develop"
+    },
+    "autoload": {
+    	"psr-0": { "VizualizerShop": "classes" }
+    }
+}
