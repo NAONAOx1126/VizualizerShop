@@ -17,7 +17,7 @@
         "naonaox1126/vizualizer": ">=1.0.0"
     },
     "require-dev": {
-        "naonaox1126/vizualizer": "develop"
+        "naonaox1126/vizualizer": "dev-develop"
     },
     "autoload": {
     	"psr-0": { "VizualizerShop": "classes" }
