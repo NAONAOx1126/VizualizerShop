@@ -14,7 +14,7 @@
 	],
     "require": {
     	"php": ">=5.3.0",
-        "naonaox1126/vizualizer": ">=1.0.0"
+        "naonaox1126/vizualizer": "dev-master"
     },
     "require-dev": {
         "naonaox1126/vizualizer": "dev-develop"
