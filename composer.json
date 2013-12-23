@@ -3,9 +3,8 @@
 	"description": "Shop Extension for Vizualizer",
 	"keywords": ["PHP", "Framework", "MySQL", "Extension"],
 	"type": "framework",
-	"license": "Apache v2",
+	"license": "Apache-2.0",
 	"homepage": "https://github.com/NAONAOx1126/VizualizerShop",
-	 "minimum-stability" : "dev",
 	"authors": [
 		{
 			"name": "NAONAOx1126",
@@ -13,9 +12,11 @@
 		}
 	],
     "require": {
-    	"php": ">=5.3.0"
+    	"php": ">=5.3.0",
+    	"naonaox1126/vizualizer": ">=1.0.0"
     },
     "require-dev": {
+    	"naonaox1126/vizualizer": "dev-develop"
     },
     "autoload": {
     	"psr-0": { "VizualizerShop": "classes" }
