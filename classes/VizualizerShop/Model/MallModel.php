@@ -88,7 +88,7 @@ class VizualizerShop_Model_MallModel extends Vizualizer_Plugin_Model
         if ($this->isLimitedCompany() && $this->limitCompanyId() > 0) {
             $values["company_id"] = $this->limitCompanyId();
         }
-        return parent::findAllBy($values, $order, $reserve, $forceOperator);
+        return parent::findAllBy($values, $order, $reverse, $forceOperator);
     }
 
     /**
