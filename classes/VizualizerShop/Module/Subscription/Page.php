@@ -23,16 +23,16 @@
  */
 
 /**
- * 商品のリストをページング付きで取得する。
+ * 購読のリストをページング付きで取得する。
  *
  * @package VizualizerShop
  * @author Naohisa Minagawa <info@vizualizer.jp>
  */
-class VizualizerShop_Module_Product_Page extends Vizualizer_Plugin_Module_Page
+class VizualizerShop_Module_Subscription_Page extends Vizualizer_Plugin_Module_Page
 {
 
     function execute($params)
     {
-        $this->executeImpl($params, "Shop", "Product", $params->get("result", "products"));
+        $this->executeImpl($params, "Shop", "Subscription", $params->get("result", "subscriptions"));
     }
 }

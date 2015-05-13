@@ -33,6 +33,6 @@ class VizualizerShop_Module_Subscription_List extends Vizualizer_Plugin_Module_L
 
     function execute($params)
     {
-        $this->executeImpl($params, "Shop", "Subscription", $params->get("result", "subscription"));
+        $this->executeImpl($params, "Shop", "Subscription", $params->get("result", "subscriptions"));
     }
 }
