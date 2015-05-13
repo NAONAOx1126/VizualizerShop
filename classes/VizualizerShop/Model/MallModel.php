@@ -46,14 +46,27 @@ class VizualizerShop_Model_MallModel extends Vizualizer_Plugin_Model
      */
     private function isLimitedCompany()
     {
+        if(Vizualizer_Configure::get("shop_mall_activated")){
+            return true;
+        }
         return false;
     }
 
     /**
-     * 制限の対象隣っている組織IDを返す
+     * 制限の対象となっている組織IDを返す
      */
     private function limitCompanyId()
     {
+        if($this->isLimitedCompany()){
+            $shopCode = preg_replace("/\\.".preg_quote(Vizualizer_Configure::get("shop_mall_domain"))."$/", "", $_SERVER["SERVER_NAME"]);
+            // ショップコードから対応する法人を取得
+            $loader = new Vizualizer_Plugin("admin");
+            $model = $loader->loadModel("Company");
+            $model->findBy(array("company_code" => $shopCode));
+            if($model->company_id > 0){
+                return $model->company_id;
+            }
+        }
         return 0;
     }
 
