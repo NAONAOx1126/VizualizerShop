@@ -30,6 +30,10 @@
  */
 class VizualizerShop_Model_MallModel extends Vizualizer_Plugin_Model
 {
+    /**
+     * アクセスドメインから取得したショップID
+     */
+    private $domainShopId;
 
     /**
      * データベースモデルを初期化する。
@@ -41,12 +45,62 @@ class VizualizerShop_Model_MallModel extends Vizualizer_Plugin_Model
     }
 
     /**
+     * アクセスしたドメインからショップコードを取得する。
+     */
+    private function getDomainShopId(){
+        if(!$this->domainShopId){
+            $shopCode = preg_replace("/\\.".preg_quote(Vizualizer_Configure::get("shop_mall_domain"))."$/", "", $_SERVER["SERVER_NAME"]);
+
+            // 結果的にIDを取得できない場合は*を返すようにする。
+            $this->domainShopId = "*";
+
+            if($shopCode != $_SERVER["SERVER_NAME"]){
+                // 正しくショップコードが取得できた場合、ショップコードから対応する法人を取得
+                $loader = new Vizualizer_Plugin("admin");
+                $model = $loader->loadModel("Company");
+                $model->findBy(array("company_code" => $shopCode));
+                if($model->company_id > 0){
+                    $this->domainShopId = $model->company_id;
+                }
+            }
+        }
+
+        // 結果として得られたショップIDを返す。
+        return $this->domainShopId;
+    }
+
+    /**
+     * ログインアカウントからショップIDを取得する。
+     */
+    public function getLoginShopId(){
+        try{
+            // DBのカラムにoperator_idが存在し、Adminパッケージをインストールしている場合のみ有効
+            if (class_exists("VizualizerAdmin")) {
+                $operator = Vizualizer_Session::get(VizualizerAdmin::SESSION_KEY);
+                // セッションからオペレータIDが取得できた場合のみ処理を実施
+                if (is_array($operator) && array_key_exists("operator_id", $operator) && $operator["operator_id"] > 0) {
+                    // 管理者の場合は無制限アカウントに設定
+                    if($operator["administrator_flg"] == "1") {
+                        return "*";
+                    }
+                    // 管理者でない場合はオペレータIDを返す。
+                    return $operator["operator_id"];
+                }
+            }
+        }catch(Exception $e){
+            // Adminパッケージを使っていない場合は、条件の設定をスキップする。
+        }
+        // ログインユーザーでない場合は0を返す。
+        return "0";
+    }
+
+    /**
      * 組織IDで制限がかかっているかどうかを返す
      * @return boolean
      */
     private function isLimitedCompany()
     {
-        if(Vizualizer_Configure::get("shop_mall_activated")){
+        if(Vizualizer_Configure::get("shop_mall_activated") && ($this->getDomainShopId() != "*" || $this->getLoginShopId() != "*")){
             return true;
         }
         return false;
@@ -58,13 +112,13 @@ class VizualizerShop_Model_MallModel extends Vizualizer_Plugin_Model
     private function limitCompanyId()
     {
         if($this->isLimitedCompany()){
-            $shopCode = preg_replace("/\\.".preg_quote(Vizualizer_Configure::get("shop_mall_domain"))."$/", "", $_SERVER["SERVER_NAME"]);
-            // ショップコードから対応する法人を取得
-            $loader = new Vizualizer_Plugin("admin");
-            $model = $loader->loadModel("Company");
-            $model->findBy(array("company_code" => $shopCode));
-            if($model->company_id > 0){
-                return $model->company_id;
+            $domainShopId = $this->getDomainShopId();
+            $loginShopId = $this->getLoginShopId();
+            if($domainShopId == "*" && $loginShopId > 0){
+                return $loginShopId;
+            }
+            if($domainShopId != "*" && ($loginShopId == "*" || $loginShopId == "0" || $domainShopId == $loginShopId)){
+                return $domainShopId;
             }
         }
         return 0;
