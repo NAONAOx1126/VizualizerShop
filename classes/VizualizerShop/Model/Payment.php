@@ -30,6 +30,15 @@
  */
 class VizualizerShop_Model_Payment extends VizualizerShop_Model_MallModel
 {
+    /**
+     * 決済未了
+     */
+    const PAYMENT_NEW = 0;
+
+    /**
+     * 決済済み
+     */
+    const PAYMENT_PAYED = 1;
 
     /**
      * コンストラクタ

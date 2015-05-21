@@ -36,6 +36,11 @@ class VizualizerShop_Model_Cart extends VizualizerShop_Model_MallModel
     const CART_KEY_PREFIX = "SHOPPING_CART";
 
     /**
+     * 購入時会員登録するかどうかのフラグ
+     */
+    private $register;
+
+    /**
      * 顧客
      */
     private $customer;
@@ -75,7 +80,7 @@ class VizualizerShop_Model_Cart extends VizualizerShop_Model_MallModel
      *
      * @param $values モデルに初期設定する値
      */
-    public function __construct($company_id)
+    public function __construct($values = array())
     {
         // 元データを呼び出し
         $this->products = array();
@@ -217,7 +222,8 @@ class VizualizerShop_Model_Cart extends VizualizerShop_Model_MallModel
     /**
      * 顧客情報を設定する。
      */
-    public function setCustomer($customer){
+    public function setCustomer($customer, $register = false){
+        $this->register = $register;
         $this->customer = $customer;
         $this->saveCart();
     }
@@ -297,5 +303,143 @@ class VizualizerShop_Model_Cart extends VizualizerShop_Model_MallModel
      */
     public function getShipTime(){
         return $this->shipTime;
+    }
+
+    /**
+     * 購入完了処理を行う。
+     */
+    public function purchase($order_code = "", $point = 0, $order_status = 0){
+        $loader = new Vizualizer_Plugin("shop");
+        // 購読を購入する場合は強制的に購入時に会員登録が必要となる。
+        if($this->subscription){
+            $this->register = true;
+        }
+        // 購入時会員登録をする場合は会員情報を保存
+        if($this->register){
+            $this->customer->save();
+            $this->customerShip->customer_id = $this->customer->customer_id;
+            $this->customerShip->save();
+        }
+
+        if($this->subscription){
+            // 購読の場合は顧客購読データを作成
+            $subscription = $loader->loadModel("CustomerSubscription");
+            $subscription->customer_id = $this->customer->customer_id;
+            $subscription->customer_ship_id = $this->customerShip->customer_ship_id;
+            $subscription->subscription_id = $this->subscription->subscription_id;
+            $subscription->ship_id = $this->ship->ship_id;
+            $subscription->subscription_time = Vizualizer::now()->date("Y-m-d H:i:s");
+            switch($this->subscription->interval_type){
+                case "2":
+                    $this->subscription->interval_length = $this->subscription->interval_length * 7;
+                case "1":
+                default:
+                    $type = "day";
+                    break;
+                case "3":
+                    $type = "month";
+                    break;
+                case "4":
+                    $type = "year";
+                    break;
+            }
+            $subscription->expire_time = Vizualizer::now()->strToTime("+".$this->subscription->interval_length." ".$type)->date("Y-m-d H:i:s");
+            $subscription->subscription_status = VizualizerShop_Model_CustomerSubscription::STATUS_ACTIVE;
+            $subscription->save();
+        }else{
+            // 商品購入の場合は注文データを作成
+            $subtotal = 0;
+            $ship_fees = 0;
+            foreach($this->products as $productOption){
+                $product = $productOption->product();
+                $subtotal += $product->sale_price * $productOption->quantity;
+                if($product->ship_fee_flg == "1"){
+                    $ship_fees += $product->ship_fee * $productOption->quantity;
+                }
+            }
+
+            // 購入者情報から注文情報を作成
+            $order = $loader->loadModel("Order");
+            $order->order_code = $order_code;
+            $order->customer_id = $this->customer->customer_id;
+            $order->order_company_name = $this->customer->company_name;
+            $order->order_division_name = $this->customer->division_name;
+            $order->order_sei = $this->customer->sei;
+            $order->order_mei = $this->customer->mei;
+            $order->order_sei_kana = $this->customer->sei_kana;
+            $order->order_mei_kana = $this->customer->mei_kana;
+            $order->order_zip1 = $this->customer->zip1;
+            $order->order_zip2 = $this->customer->zip2;
+            $order->order_pref = $this->customer->pref;
+            $order->order_address1 = $this->customer->address1;
+            $order->order_address2 = $this->customer->address2;
+            $order->order_tel1 = $this->customer->tel1;
+            $order->order_tel2 = $this->customer->tel2;
+            $order->order_tel3 = $this->customer->tel3;
+            $order->order_email = $this->customer->email;
+            $order->order_status = $order_status;
+            $order->order_time = Vizualizer::now()->date("Y-m-d H:i:s");
+            $order->payment_id = $this->payment->payment_id;
+            $order->payment_name = $this->payment->payment_name;
+            $order->payment_status = VizualizerShop_Model_Payment::PAYMENT_NEW;
+            $order->subtotal = $subtotal;
+            if($this->payment->charge5_total > 0 && $this->payment->charge5_total < $subtotal){
+                $order->charge = $this->payment->charge5;
+            }elseif($this->payment->charge4_total > 0 && $this->payment->charge4_total < $subtotal){
+                $order->charge = $this->payment->charge4;
+            }elseif($this->payment->charge3_total > 0 && $this->payment->charge3_total < $subtotal){
+                $order->charge = $this->payment->charge3;
+            }elseif($this->payment->charge2_total > 0 && $this->payment->charge2_total < $subtotal){
+                $order->charge = $this->payment->charge2;
+            }else{
+                $order->charge = $this->payment->charge1;
+            }
+            $order->ship_fee = $this->ship->shipFee($this->customerShip->pref, $this->customerShip->address1, $this->customerShip->address2) + $ship_fees;
+            $order->discount = 0;
+            $order->adjustment = 0;
+            $order->total = $order->subtotal + $order->charge + $order->ship_fee - $order->discount + $order->adjustment;
+            $order->use_point = $point;
+            $order->payment_total = $order->total - $order->use_point;
+            $order->save();
+
+            // 配送先情報から配送情報を登録
+            $orderShip = $loader->loadModel("OrderShip");
+            $orderShip->order_id = $order->order_id;
+            $orderShip->ship_company_name = $this->customerShip->company_name;
+            $orderShip->ship_division_name = $this->customerShip->division_name;
+            $orderShip->ship_sei = $this->customerShip->sei;
+            $orderShip->ship_mei = $this->customerShip->mei;
+            $orderShip->ship_sei_kana = $this->customerShip->sei_kana;
+            $orderShip->ship_mei_kana = $this->customerShip->mei_kana;
+            $orderShip->ship_zip1 = $this->customerShip->zip1;
+            $orderShip->ship_zip2 = $this->customerShip->zip2;
+            $orderShip->ship_pref = $this->customerShip->pref;
+            $orderShip->ship_address1 = $this->customerShip->address1;
+            $orderShip->ship_address2 = $this->customerShip->address2;
+            $orderShip->ship_tel1 = $this->customerShip->tel1;
+            $orderShip->ship_tel2 = $this->customerShip->tel2;
+            $orderShip->ship_tel3 = $this->customerShip->tel3;
+            $orderShip->shipment_id = $this->ship->ship_id;
+            $orderShip->shipment_name = $this->ship->ship_name;
+            $orderShip->shipment_status = VizualizerShop_Model_Ship::SHIP_NEW;
+            $orderShip->ship_plan_date = $this->shipTime->ship_date;
+            $orderShip->ship_plan_time_id = $this->shipTime->ship_plan_time_id;
+            $orderShip->ship_plan_time = $this->shipTime->ship_plan_time;
+            $orderShip->save();
+
+            // 購入情報から注文詳細情報を登録
+            foreach($this->products as $productOption){
+                $product = $productOption->product();
+                $detail = $loader->loadModel("OrderDetail");
+                $detail->order_id = $order->order_id;
+                $detail->order_ship_id = $orderShip->order_ship_id;
+                $detail->product_option_set_id = $productOption->set_id;
+                $detail->product_code = $product->product_code;
+                $detail->product_name = $product->product_name;
+                $detail->price = $product->sale_price;
+                $detail->quantity = $productOption->quantity;
+                $detail->save();
+            }
+        }
     }
 }

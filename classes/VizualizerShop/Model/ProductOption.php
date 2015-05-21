@@ -90,5 +90,4 @@ class VizualizerShop_Model_ProductOption extends Vizualizer_Plugin_Model
         $model->findByPrimaryKey($this->option_set_id);
         return $model;
     }
-
 }
