@@ -98,7 +98,7 @@ class VizualizerShop_Model_MallModel extends Vizualizer_Plugin_Model
      * 組織IDで制限がかかっているかどうかを返す
      * @return boolean
      */
-    private function isLimitedCompany()
+    protected function isLimitedCompany()
     {
         if(Vizualizer_Configure::get("shop_mall_activated") && ($this->getDomainShopId() != "*" || $this->getLoginShopId() != "*")){
             return true;
@@ -109,7 +109,7 @@ class VizualizerShop_Model_MallModel extends Vizualizer_Plugin_Model
     /**
      * 制限の対象となっている組織IDを返す
      */
-    private function limitCompanyId()
+    protected function limitCompanyId()
     {
         if($this->isLimitedCompany()){
             $domainShopId = $this->getDomainShopId();
