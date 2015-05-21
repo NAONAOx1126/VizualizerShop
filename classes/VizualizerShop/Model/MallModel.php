@@ -152,7 +152,7 @@ class VizualizerShop_Model_MallModel extends Vizualizer_Plugin_Model
      */
     public function findAllBy($values = array(), $order = "", $reverse = false, $forceOperator = false)
     {
-        if ($this->isLimitedCompany() && $this->limitCompanyId() > 0) {
+        if ($this->isLimitedCompany()) {
             $values["company_id"] = $this->limitCompanyId();
         }
         return parent::findAllBy($values, $order, $reverse, $forceOperator);
@@ -163,7 +163,7 @@ class VizualizerShop_Model_MallModel extends Vizualizer_Plugin_Model
      */
     public function queryAllBy($select)
     {
-        if ($this->isLimitedCompany() && $this->limitCompanyId() > 0) {
+        if ($this->isLimitedCompany()) {
             $select->addWhere("company_id = ?", array($this->limitCompanyId()));
         }
         return parent::queryAllBy($select);
@@ -174,7 +174,7 @@ class VizualizerShop_Model_MallModel extends Vizualizer_Plugin_Model
      */
     public function countBy($values = array(), $columns = "*")
     {
-        if ($this->isLimitedCompany() && $this->limitCompanyId() > 0) {
+        if ($this->isLimitedCompany()) {
             $values["company_id"] = $this->limitCompanyId();
         }
         return parent::countBy($values, $columns);
