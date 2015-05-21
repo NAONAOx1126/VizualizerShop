@@ -30,6 +30,15 @@
  */
 class VizualizerShop_Model_Ship extends VizualizerShop_Model_MallModel
 {
+    /**
+     * 発送待ち
+     */
+    const SHIP_NEW = 0;
+
+    /**
+     * 発送済み
+     */
+    const SHIP_SHIPPED = 1;
 
     /**
      * コンストラクタ
