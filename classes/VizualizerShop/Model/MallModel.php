@@ -44,7 +44,7 @@ class VizualizerShop_Model_MallModel extends Vizualizer_Plugin_Model
      * 組織IDで制限がかかっているかどうかを返す
      * @return boolean
      */
-    private function isLimitedCompany()
+    protected function isLimitedCompany()
     {
         return false;
     }
@@ -52,7 +52,7 @@ class VizualizerShop_Model_MallModel extends Vizualizer_Plugin_Model
     /**
      * 制限の対象隣っている組織IDを返す
      */
-    private function limitCompanyId()
+    protected function limitCompanyId()
     {
         return 0;
     }
