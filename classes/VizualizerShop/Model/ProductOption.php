@@ -30,6 +30,7 @@
  */
 class VizualizerShop_Model_ProductOption extends Vizualizer_Plugin_Model
 {
+    private $productName;
 
     /**
      * コンストラクタ
@@ -89,5 +90,38 @@ class VizualizerShop_Model_ProductOption extends Vizualizer_Plugin_Model
         $model = $loader->loadModel("OptionSet");
         $model->findByPrimaryKey($this->option_set_id);
         return $model;
+    }
+
+    /**
+     * 完全な商品名を取得する。
+     */
+    public function getProductName(){
+        if(empty($this->productName)){
+            $product = $this->product();
+            $productName = $product->product_name;
+            $optionSets = array();
+            if($product->option_set_id > 0){
+                $optionSet = $product->optionSet();
+                array_unshift($optionSets, $optionSet);
+                while($optionSet->parent_option_set_id > 0){
+                    $optionSet = $optionSet->parentOptionSet();
+                    array_unshift($optionSets, $optionSet);
+                }
+            }
+            if(!empty($optionSets)){
+                $productName .= "(";
+                foreach($optionSets as $index => $optionSet){
+                    if($index > 0){
+                        $productName .= "/";
+                    }
+                    $option = $optionSet->option();
+                    $optionType = $option->type();
+                    $productName .= $optionType->option_type.":".$option->option_value;
+                }
+                $productName .= ")";
+            }
+            $this->productName = $productName;
+        }
+        return $this->productName;
     }
 }
