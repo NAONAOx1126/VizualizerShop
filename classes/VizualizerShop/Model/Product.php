@@ -91,5 +91,4 @@ class VizualizerShop_Model_Product extends VizualizerShop_Model_MallModel
         $model = $loader->loadModel("ProductOption");
         return $model->findAllByProductId($this->product_id);
     }
-
 }

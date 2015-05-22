@@ -22,17 +22,87 @@
  * @version   1.0.0
  */
 
+use WebPay\WebPay;
+
 /**
- * 決済のデータを削除する。
+ * WEBPAYの決済を仕様した決済処理を実行する。
  *
  * @package VizualizerShop
  * @author Naohisa Minagawa <info@vizualizer.jp>
  */
-class VizualizerShop_Module_Payment_Delete extends Vizualizer_Plugin_Module_Delete
+class VizualizerShop_Module_Payment_WebPay extends Vizualizer_Plugin_Module
 {
+    const WEBPAY_SECRET_KEY = "webpay_secret";
 
     function execute($params)
     {
-        $this->executeImpl("Shop", "Payment", "payment_id");
+        // カートのデータを呼び出し
+        $loader = new Vizualizer_Plugin("shop");
+        $cart = $loader->loadModel("Cart");
+
+        // 購入データの作成が完了した場合、WEBPAYの決済処理を実行する。
+
+        // トランザクションの開始
+        $connection = Vizualizer_Database_Factory::begin("shop");
+
+        try {
+            $post = Vizualizer::request();
+
+            // 購入のデータを作成し登録する。（エラー時にロールバックで戻す必要があるため）
+            $usePoint = "";
+            if($params->check("point")){
+                $usePoint = $post[$params->get("point")];
+            }
+            $result = $cart->purchase("", $usePoint, $params->get("order_status", 0));
+            if($result instanceof VizualizerShop_Model_CustomerSubscription){
+                // 定期購入の場合
+                $customer = $result->customer();
+                $webpay = new WebPay(Vizualizer_Configure::get(WEBPAY_SECRET_KEY));
+                $data = array();
+                $data["card"] = $post["webpay-token"];
+                $data["email"] = $customer->email;
+                $wpCustomer = $webpay->customer->create($data);
+                $customer->customer_code = $wpCustomer->id;
+                $customer->save();
+
+                $subscription = $result->subscription();
+                $product = $subscription->productOption()->product();
+
+                $data = array();
+                $data["customer"] = $wpCustomer->id;
+                if($cart->isLimitedCompany()){
+                    $adminLoader = new Vizualizer_Plugin("admin");
+                    $company = $adminLoader->loadModel("Company");
+                    $company->findByPrimaryKey($subscription->company_id);
+                    $data["shop"] = $company->description;
+                }
+                $data["amount"] = $subscription->price;
+                $data["currency"] = $params->get("currency", "jpy");
+                $data["period"] = "month";
+                $data["description"] = $product->product_name;
+                $recursion = $webpay->recursion->create($data);
+                $result->customer_subscription_code = $recursion->id;
+                $result->save();
+            }elseif($result instanceof VizualizerShop_Model_Order){
+                // 通常注文の場合
+                $webpay = new WebPay(Vizualizer_Configure::get(WEBPAY_SECRET_KEY));
+                $data = array();
+                $data["amount"] = $order->payment_total;
+                $data["currency"] = $params->get("currency", "jpy");
+                $data["card"] = $post["webpay-token"];
+                $wpOrder = $webpay->charge->create($data);
+                $order->order_code = $wpOrder->id;
+                $order->save();
+            }else{
+                throw new Vizualizer_Exception_Invalid("result", "Invalid result for cart purchase.");
+            }
+
+            // エラーが無かった場合、処理をコミットする。
+            Vizualizer_Database_Factory::commit($connection);
+        } catch (Exception $e) {
+            Vizualizer_Database_Factory::rollback($connection);
+            throw new Vizualizer_Exception_Database($e);
+        }
+
     }
 }
