@@ -346,6 +346,8 @@ class VizualizerShop_Model_Cart extends VizualizerShop_Model_MallModel
             $subscription->expire_time = Vizualizer::now()->strToTime("+".$this->subscription->interval_length." ".$type)->date("Y-m-d H:i:s");
             $subscription->subscription_status = VizualizerShop_Model_CustomerSubscription::STATUS_ACTIVE;
             $subscription->save();
+
+            return $subscription;
         }else{
             // 商品購入の場合は注文データを作成
             $subtotal = 0;
@@ -440,6 +442,7 @@ class VizualizerShop_Model_Cart extends VizualizerShop_Model_MallModel
                 $detail->quantity = $productOption->quantity;
                 $detail->save();
             }
+            return $order;
         }
     }
 }
