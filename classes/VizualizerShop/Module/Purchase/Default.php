@@ -50,39 +50,6 @@ class VizualizerShop_Module_Payment_Default extends Vizualizer_Plugin_Module
                 $usePoint = $post[$params->get("point")];
             }
             $result = $cart->purchase("", $usePoint, $params->get("order_status", 0));
-            if($result instanceof VizualizerShop_Model_CustomerSubscription){
-                // 定期購入の場合
-                $subscription = $result->subscription();
-                $product = $subscription->productOption()->product();
-
-                $data = array();
-                $data["customer"] = $wpCustomer->id;
-                if($cart->isLimitedCompany()){
-                    $adminLoader = new Vizualizer_Plugin("admin");
-                    $company = $adminLoader->loadModel("Company");
-                    $company->findByPrimaryKey($subscription->company_id);
-                    $data["shop"] = $company->description;
-                }
-                $data["amount"] = $subscription->price;
-                $data["currency"] = $params->get("currency", "jpy");
-                $data["period"] = "month";
-                $data["description"] = $product->product_name;
-                $recursion = $webpay->recursion->create($data);
-                $result->customer_subscription_code = $recursion->id;
-                $result->save();
-            }elseif($result instanceof VizualizerShop_Model_Order){
-                // 通常注文の場合
-                $webpay = new WebPay(Vizualizer_Configure::get(WEBPAY_SECRET_KEY));
-                $data = array();
-                $data["amount"] = $order->payment_total;
-                $data["currency"] = $params->get("currency", "jpy");
-                $data["card"] = $post["webpay-token"];
-                $wpOrder = $webpay->charge->create($data);
-                $order->order_code = $wpOrder->id;
-                $order->save();
-            }else{
-                throw new Vizualizer_Exception_Invalid("result", "Invalid result for cart purchase.");
-            }
 
             // エラーが無かった場合、処理をコミットする。
             Vizualizer_Database_Factory::commit($connection);
