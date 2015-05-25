@@ -33,18 +33,10 @@ class VizualizerShop_Module_Purchase extends Vizualizer_Plugin_Module
 {
     function execute($params)
     {
-        $purchaseType = $params->get("purchase", "Default");
+        // サブモジュールの名前を生成
+        $purchaseName = "Shop.Purchase." . $params->get("purchase", "Default");
 
-        $purchaseClass = "Purchase.".$purchaseType;
-
-        $loader = new Vizualizer_Plugin("shop");
-        $object = $loader->loadModule($purchaseClass);
-        if (method_exists($object, "execute")) {
-            Vizualizer_Logger::writeDebug("=========== Shop." . $purchaseClass . " start ===========");
-            $object->execute($params);
-            Vizualizer_Logger::writeDebug("=========== Shop." . $purchaseClass . " end ===========");
-        } else {
-            Vizualizer_Logger::writeAlert($name . " is not plugin module.");
-        }
+        // サブモジュールを呼び出し
+        $this->executeSubModule($purchaseName, $params);
     }
 }
