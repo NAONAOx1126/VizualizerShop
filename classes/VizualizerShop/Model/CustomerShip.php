@@ -51,4 +51,14 @@ class VizualizerShop_Model_CustomerShip extends Vizualizer_Plugin_Model
     {
         $this->findBy(array("customer_ship_id" => $customer_ship_id));
     }
+
+    /**
+     * 顧客IDでデータを取得する。
+     *
+     * @param $customer_id 顧客ID
+     */
+    public function findAllByCustomerId($customer_id)
+    {
+        return $this->findAllBy(array("customer_id" => $customer_id));
+    }
 }
