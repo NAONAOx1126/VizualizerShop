@@ -28,7 +28,7 @@
  * @package VizualizerShop
  * @author Naohisa Minagawa <info@vizualizer.jp>
  */
-class VizualizerShop_Module_Product_List extends Vizualizer_Plugin_Module
+class VizualizerShop_Module_Content extends Vizualizer_Plugin_Module
 {
 
     function execute($params)
