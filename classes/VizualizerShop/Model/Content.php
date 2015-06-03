@@ -91,15 +91,35 @@ class VizualizerShop_Model_Content extends VizualizerShop_Model_MallModel
         if ($name == "company_id") {
             // ショップのIDに対しての設定は不可
         } elseif (isset($this->contents[$name])) {
-            $this->contents[$name]->content = $value;
-            $this->contents[$name]->save();
+            // トランザクションの開始
+            $connection = Vizualizer_Database_Factory::begin("shop");
+            try {
+                $this->contents[$name]->content = $value;
+                $this->contents[$name]->save();
+
+                // エラーが無かった場合、処理をコミットする。
+                Vizualizer_Database_Factory::commit($connection);
+            } catch (Exception $e) {
+                Vizualizer_Database_Factory::rollback($connection);
+                throw new Vizualizer_Exception_Database($e);
+            }
         } else {
-            $loader = new Vizualizer_Plugin("shop");
-            $contentData = $loader->loadModel("ContentData");
-            $contentData->company_id = $this->limitCompanyId();
-            $contentData->content_key = $name;
-            $contentData->content = $value;
-            $contentData->save();
+            // トランザクションの開始
+            $connection = Vizualizer_Database_Factory::begin("shop");
+            try {
+                $loader = new Vizualizer_Plugin("shop");
+                $contentData = $loader->loadModel("ContentData");
+                $contentData->company_id = $this->limitCompanyId();
+                $contentData->content_key = $name;
+                $contentData->content = $value;
+                $contentData->save();
+
+                // エラーが無かった場合、処理をコミットする。
+                Vizualizer_Database_Factory::commit($connection);
+            } catch (Exception $e) {
+                Vizualizer_Database_Factory::rollback($connection);
+                throw new Vizualizer_Exception_Database($e);
+            }
         }
     }
 
