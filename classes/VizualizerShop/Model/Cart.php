@@ -117,6 +117,20 @@ class VizualizerShop_Model_Cart extends VizualizerShop_Model_MallModel
     }
 
     /**
+     * 購読を購読IDから設定
+     */
+    public function setSubscriptionById($subscription_id){
+        if($subscription_id > 0){
+            $loader = new Vizualizer_Plugin("shop");
+            $subscription = $loader->loadModel("Subscription");
+            $subscription->findByPrimaryKey($subscription_id);
+            $this->setSubscription($subscription);
+        }else{
+            $this->setSubscription(null);
+        }
+    }
+
+    /**
      * 購読を設定
      * ただし、購読は商品と同時にカートに入れられないため、購読を設定する前に商品をクリアにする。
      */
@@ -132,6 +146,18 @@ class VizualizerShop_Model_Cart extends VizualizerShop_Model_MallModel
      */
     public function getSubscription(){
         return $this->subscription;
+    }
+
+    /**
+     * 商品を商品オプションIDからカートに追加
+     */
+    public function addProductById($product_option_id, $quantity){
+        if($product_option_id > 0){
+            $loader = new Vizualizer_Plugin("shop");
+            $productOption = $loader->loadModel("ProductOption");
+            $productOption->findByPrimaryKey($product_option_id);
+            $this->addProduct($productOption, $quantity);
+        }
     }
 
     /**
