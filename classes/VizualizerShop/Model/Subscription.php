@@ -51,4 +51,37 @@ class VizualizerShop_Model_Subscription extends VizualizerShop_Model_MallModel
     {
         $this->findBy(array("subscription_id" => $subscription_id));
     }
+
+    /**
+     * 商品データを取得する。
+     */
+    public function productOption()
+    {
+        $loader = new Vizualizer_Plugin("shop");
+        $model = $loader->loadModel("ProductOption");
+        $model->findByPrimaryKey($this->product_option_id);
+        return $model;
+    }
+
+    /**
+     * 次の発送日を取得する。
+     *
+     * @param int $date 指定日付のtime値
+     * @return 次の発送日に該当するtime値
+     */
+    public function getNextDelivery($date = null){
+        // 日付未指定もしくは過去の日付の場合は当日の日付を設定
+        if($date == null || $date < time()){
+            $date = time();
+        }
+        // 翌日以降から発送可能曜日に該当する日を取得
+        for($i = 1; $i <= 7; $i ++){
+            $targetDate = strtotime("+".$i." day", $date);
+            $weekday = strtolower(date("l", $targetDate));
+            if($this->$weekday){
+                return $targetDate;
+            }
+        }
+        return null;
+    }
 }

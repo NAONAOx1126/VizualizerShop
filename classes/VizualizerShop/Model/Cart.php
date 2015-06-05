@@ -169,6 +169,7 @@ class VizualizerShop_Model_Cart extends VizualizerShop_Model_MallModel
             $this->subscription = null;
         }
         $productExists = false;
+        print_r($this->products);
         foreach($this->products as $index => $product){
             if($product->product_option_id == $productOption->product_option_id){
                 $this->addQuantity($index, $quantity);
@@ -181,6 +182,7 @@ class VizualizerShop_Model_Cart extends VizualizerShop_Model_MallModel
             $this->products[$index] = $productOption;
             $this->setQuantity($index, $quantity);
         }
+        print_r($this->products);
     }
 
     /**
@@ -329,6 +331,24 @@ class VizualizerShop_Model_Cart extends VizualizerShop_Model_MallModel
      */
     public function getShipTime(){
         return $this->shipTime;
+    }
+
+    /**
+     * 商品購入合計金額を取得
+     */
+    public function getSubTotal(){
+        if($this->subscription){
+            // 購読の場合は月額費用を返す。
+            return $this->subscription->price;
+        }else{
+            // 商品購入の場合は商品合計金額を返す。
+            $subtotal = 0;
+            foreach($this->products as $productOption){
+                $product = $productOption->product();
+                $subtotal += $product->sale_price * $productOption->quantity;
+            }
+            return $subtotal;
+        }
     }
 
     /**
