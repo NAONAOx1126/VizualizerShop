@@ -151,7 +151,7 @@ class VizualizerShop_Model_Cart extends VizualizerShop_Model_MallModel
     /**
      * 商品を商品オプションIDからカートに追加
      */
-    public function addProductById($product_option_id, $quantity){
+    public function addProductById($product_option_id, $quantity = 1){
         if($product_option_id > 0){
             $loader = new Vizualizer_Plugin("shop");
             $productOption = $loader->loadModel("ProductOption");
@@ -169,7 +169,6 @@ class VizualizerShop_Model_Cart extends VizualizerShop_Model_MallModel
             $this->subscription = null;
         }
         $productExists = false;
-        print_r($this->products);
         foreach($this->products as $index => $product){
             if($product->product_option_id == $productOption->product_option_id){
                 $this->addQuantity($index, $quantity);
@@ -182,7 +181,6 @@ class VizualizerShop_Model_Cart extends VizualizerShop_Model_MallModel
             $this->products[$index] = $productOption;
             $this->setQuantity($index, $quantity);
         }
-        print_r($this->products);
     }
 
     /**
@@ -238,7 +236,7 @@ class VizualizerShop_Model_Cart extends VizualizerShop_Model_MallModel
             }
             // 購入数量が購入制限数量を超えていた場合ば購入数量を制限
             $sale_limit = $product->product()->sale_limit;
-            if($sale_limit < $product->quantity){
+            if($sale_limit > 0 && $sale_limit < $product->quantity){
                 $product->quantity = $sale_limit;
                 $result = false;
             }
