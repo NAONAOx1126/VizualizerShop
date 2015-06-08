@@ -177,7 +177,13 @@ class VizualizerShop_Model_Cart extends VizualizerShop_Model_MallModel
         }
         // 新規追加の場合
         if(!$productExists){
-            $index = max(array_keys($this->products)) + 1;
+            // 商品情報が空の場合は初期化
+            if(empty($this->products)){
+                $index = 1;
+                $this->products = array();
+            }else{
+                $index = max(array_keys($this->products)) + 1;
+            }
             $this->products[$index] = $productOption;
             $this->setQuantity($index, $quantity);
         }
