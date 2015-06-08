@@ -43,9 +43,11 @@ class VizualizerShop_Module_Cart_Add extends Vizualizer_Plugin_Module
             // subscription_idが渡された場合は、購読を設定
             $cart->clearProducts();
             $cart->setSubscriptionById($post["subscription_id"]);
+            $post->remove("subscription_id");
         }elseif($post["product_id"] > 0){
             // product_idが渡された場合は、商品を追加
             $cart->addProductById($post["product_id"]);
+            $post->remove("product_id");
         }
     }
 }
