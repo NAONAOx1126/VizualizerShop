@@ -23,14 +23,32 @@
  */
 
 /**
- * カートから購入完了までのステップを処理するモジュール
+ * 入力された配送先情報をカートに設定するモジュール
  *
  * @package VizualizerShop
  * @author Naohisa Minagawa <info@vizualizer.jp>
  */
-class VizualizerShop_Module_Cart_Customer extends Vizualizer_Plugin_Module
+class VizualizerShop_Module_Purchase_CustomerShip extends Vizualizer_Plugin_Module
 {
     function execute($params)
     {
+        // 入力パラメータを取得
+        $post = Vizualizer::request();
+
+        // カートのモデルを取得
+        $loader = new Vizualizer_Plugin("shop");
+        $cart = $loader->loadModel("Cart");
+
+        // 入力データから顧客データを構築
+        $customerShipData = array();
+        foreach($post as $key => $value){
+            if(preg_match("/^".$params->get("prefix", "ship")."_(.+)$", $key, $p) > 0){
+                $customerShipData[$p[1]] = $value;
+            }
+        }
+        $customerShip = $loader->loadModel("CustomerShip", $customerShipData);
+
+        // 構築した顧客データをカートに設定
+        $cart->setCustomerShip($customerShip);
     }
 }

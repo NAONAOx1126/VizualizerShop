@@ -28,7 +28,7 @@
  * @package VizualizerShop
  * @author Naohisa Minagawa <info@vizualizer.jp>
  */
-class VizualizerShop_Module_Payment_Default extends Vizualizer_Plugin_Module
+class VizualizerShop_Module_Payment_Purchase extends Vizualizer_Plugin_Module
 {
     const WEBPAY_SECRET_KEY = "webpay_secret";
 
