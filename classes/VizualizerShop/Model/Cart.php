@@ -395,6 +395,7 @@ class VizualizerShop_Model_Cart extends VizualizerShop_Model_MallModel
             }
             $subscription->expire_time = Vizualizer::now()->strToTime("+".$this->subscription->interval_length." ".$type)->date("Y-m-d H:i:s");
             $subscription->subscription_status = VizualizerShop_Model_CustomerSubscription::STATUS_ACTIVE;
+            $subscription->description = $this->description;
             $subscription->save();
 
             return $subscription;
@@ -452,6 +453,7 @@ class VizualizerShop_Model_Cart extends VizualizerShop_Model_MallModel
             $order->total = $order->subtotal + $order->charge + $order->ship_fee - $order->discount + $order->adjustment;
             $order->use_point = $point;
             $order->payment_total = $order->total - $order->use_point;
+            $order->description = $this->description;
             $order->save();
 
             // 配送先情報から配送情報を登録

@@ -58,4 +58,21 @@ class VizualizerShop_Model_PaymentToken extends VizualizerShop_Model_MallModel
         return $this->findAllBy(array("customer_id" => $customer_id, "payment_id" => $payment_id));
     }
 
+    /**
+     * 決済の情報を取得する。
+     */
+    public function payment(){
+        $loader = new Vizualizer_Plugin("shop");
+        $model = $loader->loadModel("Payment");
+        $model->findByPrimaryKey($this->payment_id);
+        return $model;
+    }
+
+    /**
+     * トークンの情報を取得する。
+     */
+    public function getInfo(){
+        $webpay = new WebPay\WebPay($this->payment()->payment_secret);
+        return $webpay->token->retrieve($this->token);
+    }
 }
