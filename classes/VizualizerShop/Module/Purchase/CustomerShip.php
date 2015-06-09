@@ -42,7 +42,7 @@ class VizualizerShop_Module_Purchase_CustomerShip extends Vizualizer_Plugin_Modu
         // 入力データから顧客データを構築
         $customerShipData = array();
         foreach($post as $key => $value){
-            if(preg_match("/^".$params->get("prefix", "ship")."_(.+)$", $key, $p) > 0){
+            if(preg_match("/^".$params->get("prefix", "ship")."_(.+)$/", $key, $p) > 0){
                 $customerShipData[$p[1]] = $value;
             }
         }

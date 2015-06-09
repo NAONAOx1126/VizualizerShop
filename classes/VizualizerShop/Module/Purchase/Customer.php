@@ -42,8 +42,12 @@ class VizualizerShop_Module_Purchase_Customer extends Vizualizer_Plugin_Module
         // 入力データから顧客データを構築
         $customerData = array();
         foreach($post as $key => $value){
-            if(preg_match("/^".$params->get("prefix", "order")."_(.+)$", $key, $p) > 0){
+            if(preg_match("/^order_(.+)$/", $key, $p) > 0){
                 $customerData[$p[1]] = $value;
+                // 送信先が違う場合のチェックと送信先が同じ場合のチェックを捕捉し、値をコピー
+                if($post["other_ships"] != "1" || $post["same_ships"] > 0){
+                    $post->set("ship_".$p[1], $value);
+                }
             }
         }
         $memberLoader = new Vizualizer_Plugin("member");
@@ -52,11 +56,8 @@ class VizualizerShop_Module_Purchase_Customer extends Vizualizer_Plugin_Module
         // 構築した顧客データをカートに設定
         $cart->setCustomer($customer, $params->get("register", false));
 
-        // 送信先が違う場合のチェックと送信先が同じ場合のチェックを捕捉
         if($post["other_ships"] != "1" || $post["same_ships"] > 0){
-            $customerShip = $loader->loadModel("CutsomerShip", $customerData);
-            $customerShip = $loader->loadModel("CutsomerShip", $customerData);
-            $cart->setCustomerShip($customerShip);
+            $this->redirect($params->get("skipped_url"));
         }
     }
 }
