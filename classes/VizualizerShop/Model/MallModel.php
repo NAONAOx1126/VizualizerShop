@@ -83,8 +83,8 @@ class VizualizerShop_Model_MallModel extends Vizualizer_Plugin_Model
                     if($operator["administrator_flg"] == "1") {
                         return "*";
                     }
-                    // 管理者でない場合はオペレータIDを返す。
-                    return $operator["operator_id"];
+                    // 管理者でない場合は法人IDを返す。
+                    return $operator["company_id"];
                 }
             }
         }catch(Exception $e){

@@ -54,4 +54,15 @@ class VizualizerShop_Model_CustomerSubscription extends Vizualizer_Plugin_Model
     {
         $this->findBy(array("customer_subscription_id" => $customer_subscription_id));
     }
+
+    /**
+     * 購読マスタを取得する。
+     */
+    public function subscription()
+    {
+        $loader = new Vizualizer_Plugin("shop");
+        $model = $loader->loadModel("Subscription");
+        $model->findByPrimaryKey($this->subscription_id);
+        return $model;
+    }
 }

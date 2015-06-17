@@ -28,35 +28,37 @@
  * @package VizualizerShop
  * @author Naohisa Minagawa <info@vizualizer.jp>
  */
-class VizualizerShop_Module_Payment_Purchase extends Vizualizer_Plugin_Module
+class VizualizerShop_Module_Purchase_Purchase extends Vizualizer_Plugin_Module
 {
-    const WEBPAY_SECRET_KEY = "webpay_secret";
-
     function execute($params)
     {
         // カートのデータを呼び出し
         $loader = new Vizualizer_Plugin("shop");
         $cart = $loader->loadModel("Cart");
 
-        // トランザクションの開始
-        $connection = Vizualizer_Database_Factory::begin("shop");
+        if(!empty($cart->payment->payment_module_name)){
+            $purchase = $loader->loadModule("Purchase.".$cart->payment->payment_module_name);
+            $purchase->execute($params);
+        }else{
+            // トランザクションの開始
+            $connection = Vizualizer_Database_Factory::begin("shop");
 
-        try {
-            $post = Vizualizer::request();
+            try {
+                $post = Vizualizer::request();
 
-            // 購入のデータを作成し登録する。（エラー時にロールバックで戻す必要があるため）
-            $usePoint = "";
-            if($params->check("point")){
-                $usePoint = $post[$params->get("point")];
+                // 購入のデータを作成し登録する。（エラー時にロールバックで戻す必要があるため）
+                $usePoint = "";
+                if($params->check("point")){
+                    $usePoint = $post[$params->get("point")];
+                }
+                $result = $cart->purchase("", $usePoint, $params->get("order_status", 0));
+
+                // エラーが無かった場合、処理をコミットする。
+                Vizualizer_Database_Factory::commit($connection);
+            } catch (Exception $e) {
+                Vizualizer_Database_Factory::rollback($connection);
+                throw new Vizualizer_Exception_Database($e);
             }
-            $result = $cart->purchase("", $usePoint, $params->get("order_status", 0));
-
-            // エラーが無かった場合、処理をコミットする。
-            Vizualizer_Database_Factory::commit($connection);
-        } catch (Exception $e) {
-            Vizualizer_Database_Factory::rollback($connection);
-            throw new Vizualizer_Exception_Database($e);
         }
-
     }
 }

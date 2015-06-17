@@ -3,10 +3,27 @@
 class VizualizerShop_Json_WebPayEvent
 {
     /**
+     * pingイベントを処理する
+     */
+    private function ping($data){
+
+    }
+
+    /**
      * 定期課金成功時のイベントを処理する。
      */
     private function recursionSucceeded($data){
+        // 定期課金が成功した場合は該当の定期購入の情報を取得する。
+        $loader = new Vizualizer_Plugin("shop");
+        $customerSubscription = $loader->loadModel("CustomerSubscription");
+        $customerSubscription->findBy(array("customer_subscription_code" => $data->id));
+        if($customerSubscription->customer_subscription_id > 0){
+            $subscription = $customerSubscription->subscription();
 
+        }
+        $time = strtotime("+2 day");
+
+        Vizualizer_Configure::set("SYSTEM_CURRENT_TIME", )
     }
 
     /**
@@ -40,11 +57,11 @@ class VizualizerShop_Json_WebPayEvent
 
         // 取得したメソッド名が存在するかチェックして、存在した場合には実行
         if(method_exists($this, $methodName)){
-            $this->$methodName($data);
+            $this->$methodName($data->data->object);
         }
 
-        // メソッドの有無に関係なく、処理が完了した場合はOKと返却し、そのあとの処理を行わないようにするため、exitで終了させる。
-        echo "OK";
+        // タイプが正しくない場合はエラーとして返す
+        header("HTTP/1.1 404 Not Found");
         exit;
     }
 }

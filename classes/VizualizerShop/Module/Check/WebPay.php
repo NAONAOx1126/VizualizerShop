@@ -23,32 +23,26 @@
  */
 
 /**
- * 注文詳細のモデルです。
+ * WebPayの入力チェックを行う。
  *
- * @package VizualizerShop
+ * @package Vizualizer
  * @author Naohisa Minagawa <info@vizualizer.jp>
  */
-class VizualizerShop_Model_OrderDetail extends Vizualizer_Plugin_Model
+class VizualizerShop_Module_Check_WebPay extends Vizualizer_Plugin_Module
 {
 
-    /**
-     * コンストラクタ
-     *
-     * @param $values モデルに初期設定する値
-     */
-    public function __construct($values = array())
+    function execute($params)
     {
-        $loader = new Vizualizer_Plugin("shop");
-        parent::__construct($loader->loadTable("OrderDetails"), $values);
-    }
-
-    /**
-     * 主キーでデータを取得する。
-     *
-     * @param $order_detail_id 注文詳細ID
-     */
-    public function findByPrimaryKey($order_detail_id)
-    {
-        $this->findBy(array("order_detail_id" => $order_detail_id));
+        $post = Vizualizer::request();
+        if($post["payment_id"] > 0){
+            $loader = new Vizualizer_Plugin("shop");
+            $model = $loader->loadModel("Payment");
+            $model->findByPrimaryKey($post["payment_id"]);
+            if($model->payment_module_name == "WebPay"){
+                if ((!isset($post["webpay-token"]) || $post["webpay-token"] == "") && empty($errors["webpay-token"])) {
+                    throw new Vizualizer_Exception_Invalid("webpay-token", $params->get("value") . $params->get("suffix", "が未入力です。"));
+                }
+            }
+        }
     }
 }

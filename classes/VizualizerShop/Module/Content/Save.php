@@ -23,32 +23,27 @@
  */
 
 /**
- * 注文詳細のモデルです。
+ * 商品のリストを取得する。
  *
  * @package VizualizerShop
  * @author Naohisa Minagawa <info@vizualizer.jp>
  */
-class VizualizerShop_Model_OrderDetail extends Vizualizer_Plugin_Model
+class VizualizerShop_Module_Content_Save extends Vizualizer_Plugin_Module
 {
 
-    /**
-     * コンストラクタ
-     *
-     * @param $values モデルに初期設定する値
-     */
-    public function __construct($values = array())
+    function execute($params)
     {
+        // ショップコンテンツを取得する。
         $loader = new Vizualizer_Plugin("shop");
-        parent::__construct($loader->loadTable("OrderDetails"), $values);
-    }
+        $model = $loader->loadModel("Content");
 
-    /**
-     * 主キーでデータを取得する。
-     *
-     * @param $order_detail_id 注文詳細ID
-     */
-    public function findByPrimaryKey($order_detail_id)
-    {
-        $this->findBy(array("order_detail_id" => $order_detail_id));
+        // 入力したパラメータのうち、キーが指定の文字列で始まるものをコンテンツデータとして登録する。
+        $post = Vizualizer::request();
+        foreach($post as $key => $value){
+            if(preg_match("/^".preg_quote($params->get("prefix", "@"), "/")."(.+)$/", $key, $p) > 0){
+                $name = $p[1];
+                $model->$name = $value;
+            }
+        }
     }
 }

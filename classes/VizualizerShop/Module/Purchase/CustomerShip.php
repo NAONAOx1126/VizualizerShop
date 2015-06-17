@@ -43,7 +43,7 @@ class VizualizerShop_Module_Purchase_CustomerShip extends Vizualizer_Plugin_Modu
         $customerShipData = array();
         foreach($post as $key => $value){
             if(preg_match("/^".$params->get("prefix", "ship")."_(.+)$/", $key, $p) > 0){
-                $customerShipData[$p[1]] = $value;
+                $customerShipData[$key] = $value;
             }
         }
         $customerShip = $loader->loadModel("CustomerShip", $customerShipData);

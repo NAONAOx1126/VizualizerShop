@@ -51,4 +51,23 @@ class VizualizerShop_Model_Order extends VizualizerShop_Model_MallModel
     {
         $this->findBy(array("order_id" => $order_id));
     }
+
+    /**
+     * 注文配送先情報を取得する
+     */
+    public function orderShips(){
+        $loader = new Vizualizer_Plugin("shop");
+        $model = $loader->loadModel("OrderShip");
+        return $model->findAllBy(array("order_id" => $this->order_id));
+    }
+
+    /**
+     * 注文配送先情報を取得する
+     */
+    public function orderShip(){
+        $loader = new Vizualizer_Plugin("shop");
+        $model = $loader->loadModel("OrderShip");
+        $model->findBy(array("order_id" => $this->order_id));
+        return $model;
+    }
 }

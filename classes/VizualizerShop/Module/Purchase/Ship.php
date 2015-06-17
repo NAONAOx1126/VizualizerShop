@@ -23,32 +23,25 @@
  */
 
 /**
- * 注文詳細のモデルです。
+ * 入力された配送方法情報をカートに設定するモジュール
  *
  * @package VizualizerShop
  * @author Naohisa Minagawa <info@vizualizer.jp>
  */
-class VizualizerShop_Model_OrderDetail extends Vizualizer_Plugin_Model
+class VizualizerShop_Module_Purchase_Ship extends Vizualizer_Plugin_Module
 {
-
-    /**
-     * コンストラクタ
-     *
-     * @param $values モデルに初期設定する値
-     */
-    public function __construct($values = array())
+    function execute($params)
     {
+        // 入力パラメータを取得
+        $post = Vizualizer::request();
+
+        // カートのモデルを取得
         $loader = new Vizualizer_Plugin("shop");
-        parent::__construct($loader->loadTable("OrderDetails"), $values);
-    }
+        $cart = $loader->loadModel("Cart");
 
-    /**
-     * 主キーでデータを取得する。
-     *
-     * @param $order_detail_id 注文詳細ID
-     */
-    public function findByPrimaryKey($order_detail_id)
-    {
-        $this->findBy(array("order_detail_id" => $order_detail_id));
+        // 入力データから決済データを構築
+        $ship = $loader->loadModel("Ship");
+        $ship->findByPrimaryKey($post["ship_id"]);
+        $cart->setShip($ship);
     }
 }
