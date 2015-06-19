@@ -34,19 +34,17 @@ class VizualizerShop_Module_Filter extends Vizualizer_Plugin_Module
     function execute($params)
     {
         // ショップコンテンツを取得する。
-        if (Vizualizer_Configure::get("default_shop_domain") != null) {
-            $loader = new Vizualizer_Plugin("shop");
-            $model = $loader->loadModel("Content");
+        $loader = new Vizualizer_Plugin("shop");
+        $model = $loader->loadModel("Content");
 
-            echo "isLimitedCompany = ".$model->isLimitedCompany()."<br>\r\n";
-            echo "limitCompanyId = ".$model->limitCompanyId()."<br>\r\n";
-            /*
-            if($model->isLimitedCompany() && $model->limitCompanyId() == 0){
-                ob_end_clean();
-                header("HTTP/1.1 404 Not Found");
-                exit;
-            }
-            */
+        echo "isLimitedCompany = ".$model->isLimitedCompany()."<br>\r\n";
+        echo "limitCompanyId = ".$model->limitCompanyId()."<br>\r\n";
+        /*
+        if($model->isLimitedCompany() && $model->limitCompanyId() == 0){
+            ob_end_clean();
+            header("HTTP/1.1 404 Not Found");
+            exit;
         }
+        */
     }
 }
