@@ -34,14 +34,14 @@ class VizualizerShop_Module_RedirectShop extends Vizualizer_Plugin_Module
     function execute($params)
     {
         // ショップコンテンツを取得する。
-        if ($params->check("shop")) {
+        if (Vizualizer_Configure::get("default_shop_domain") != null) {
             $loader = new Vizualizer_Plugin("shop");
             $model = $loader->loadModel("Content");
 
             echo "isLimitedCompany = ".$model->isLimitedCompany()."<br>\r\n";
             echo "limitCompanyId = ".$model->limitCompanyId()."<br>\r\n";
             if($model->isLimitedCompany() && $model->limitCompanyId() == 0){
-                $this->redirect("http://".$params->get("shop").".".Vizualizer_Configure::get("shop_mall_domain").$_SERVER["REQUEST_URI"]);
+                $this->redirect("http://".Vizualizer_Configure::get("default_shop_domain").".".Vizualizer_Configure::get("shop_mall_domain").$_SERVER["REQUEST_URI"]);
             }
         }
     }
