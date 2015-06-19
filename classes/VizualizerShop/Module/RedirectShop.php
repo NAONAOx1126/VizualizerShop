@@ -23,21 +23,24 @@
  */
 
 /**
- * 商品のリストを取得する。
+ * ショップを指定する必要があるページに対して、ショップが指定されていない場合、指定されたショップにリダイレクトする。
  *
  * @package VizualizerShop
  * @author Naohisa Minagawa <info@vizualizer.jp>
  */
-class VizualizerShop_Module_Content extends Vizualizer_Plugin_Module
+class VizualizerShop_Module_RedirctShop extends Vizualizer_Plugin_Module
 {
 
     function execute($params)
     {
         // ショップコンテンツを取得する。
-        $loader = new Vizualizer_Plugin("shop");
-        $model = $loader->loadModel("Content");
+        if ($params->check("shop")) {
+            $loader = new Vizualizer_Plugin("shop");
+            $model = $loader->loadModel("Content");
 
-        $attr = Vizualizer::attr();
-        $attr["content"] = $model;
+            if($model->isLimitedCompany() && $model->limitCompanyId() == 0){
+                $this->redirect("http://".$params->get("shop").".".Vizualizer_Configure::get("shop_mall_domain").$_SERVER["REQUEST_URI"]);
+            }
+        }
     }
 }
