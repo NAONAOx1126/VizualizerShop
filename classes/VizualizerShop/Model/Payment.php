@@ -60,4 +60,16 @@ class VizualizerShop_Model_Payment extends VizualizerShop_Model_MallModel
     {
         $this->findBy(array("payment_id" => $payment_id));
     }
+
+    /**
+     * トークンのリストを取得する。
+     */
+    public function tokens($customer_id = 0){
+        if($customer_id > 0){
+            $loader = new Vizualizer_Plugin("shop");
+            $model = $loader->loadModel("PaymentToken");
+            return $model->findAllByCustomerPayment($customer_id, $this->payment_id);
+        }
+        return array();
+    }
 }

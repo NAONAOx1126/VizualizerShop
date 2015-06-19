@@ -84,17 +84,12 @@ class VizualizerShop_Model_Ship extends VizualizerShop_Model_MallModel
     /**
      * 配送先情報から送料を算出
      */
-    public function ShipFee($pref, $address1, $address2)
+    public function getShipFee($pref, $address1, $address2)
     {
         $specials = $this->specialShips();
-        $loader = new Vizualizer_Plugin("address");
-        $model = $loader->loadModel("Pref");
         foreach ($specials as $special) {
-            $model->findByPrimaryKey($special->pref_id);
-            if ($model->pref_name == $pref) {
-                if (empty($special->address_prefix) || preg_match("/^".preg_quote($special->address_prefix, "/")."/iu") > 0) {
-                    return $special->ship_fee;
-                }
+            if (empty($special->address_prefix) || preg_match("/^".preg_quote($special->address_prefix, "/")."/iu", $pref.$address1.$address2) > 0) {
+                return $special->ship_fee;
             }
         }
         return $this->ship_fee;

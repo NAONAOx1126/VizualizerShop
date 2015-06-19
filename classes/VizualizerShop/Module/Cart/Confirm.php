@@ -23,32 +23,14 @@
  */
 
 /**
- * 注文詳細のモデルです。
+ * カートから購入完了までのステップを処理するモジュール
  *
  * @package VizualizerShop
  * @author Naohisa Minagawa <info@vizualizer.jp>
  */
-class VizualizerShop_Model_OrderDetail extends Vizualizer_Plugin_Model
+class VizualizerShop_Module_Cart_Customer extends Vizualizer_Plugin_Module
 {
-
-    /**
-     * コンストラクタ
-     *
-     * @param $values モデルに初期設定する値
-     */
-    public function __construct($values = array())
+    function execute($params)
     {
-        $loader = new Vizualizer_Plugin("shop");
-        parent::__construct($loader->loadTable("OrderDetails"), $values);
-    }
-
-    /**
-     * 主キーでデータを取得する。
-     *
-     * @param $order_detail_id 注文詳細ID
-     */
-    public function findByPrimaryKey($order_detail_id)
-    {
-        $this->findBy(array("order_detail_id" => $order_detail_id));
     }
 }

@@ -23,40 +23,31 @@
  */
 
 /**
- * 購入時決済を含まない購入処理を実行する。
+ * カートから購入完了までのステップを処理するモジュール
  *
  * @package VizualizerShop
  * @author Naohisa Minagawa <info@vizualizer.jp>
  */
-class VizualizerShop_Module_Payment_Default extends Vizualizer_Plugin_Module
+class VizualizerShop_Module_Cart_Add extends Vizualizer_Plugin_Module
 {
-    const WEBPAY_SECRET_KEY = "webpay_secret";
-
     function execute($params)
     {
-        // カートのデータを呼び出し
+        // POSTパラメータを取得
+        $post = Vizualizer::request();
+
+        // カートのモデルを取得
         $loader = new Vizualizer_Plugin("shop");
         $cart = $loader->loadModel("Cart");
 
-        // トランザクションの開始
-        $connection = Vizualizer_Database_Factory::begin("shop");
-
-        try {
-            $post = Vizualizer::request();
-
-            // 購入のデータを作成し登録する。（エラー時にロールバックで戻す必要があるため）
-            $usePoint = "";
-            if($params->check("point")){
-                $usePoint = $post[$params->get("point")];
-            }
-            $result = $cart->purchase("", $usePoint, $params->get("order_status", 0));
-
-            // エラーが無かった場合、処理をコミットする。
-            Vizualizer_Database_Factory::commit($connection);
-        } catch (Exception $e) {
-            Vizualizer_Database_Factory::rollback($connection);
-            throw new Vizualizer_Exception_Database($e);
+        if($post["subscription_id"] > 0){
+            // subscription_idが渡された場合は、購読を設定
+            $cart->clearProducts();
+            $cart->setSubscriptionById($post["subscription_id"]);
+            $post->remove("subscription_id");
+        }elseif($post["product_id"] > 0){
+            // product_idが渡された場合は、商品を追加
+            $cart->addProductById($post["product_id"]);
+            $post->remove("product_id");
         }
-
     }
 }

@@ -23,14 +23,13 @@
  */
 
 /**
- * 注文詳細のモデルです。
+ * 決済トークンのモデルです。
  *
  * @package VizualizerShop
  * @author Naohisa Minagawa <info@vizualizer.jp>
  */
-class VizualizerShop_Model_OrderDetail extends Vizualizer_Plugin_Model
+class VizualizerShop_Model_PaymentToken extends VizualizerShop_Model_MallModel
 {
-
     /**
      * コンストラクタ
      *
@@ -39,16 +38,41 @@ class VizualizerShop_Model_OrderDetail extends Vizualizer_Plugin_Model
     public function __construct($values = array())
     {
         $loader = new Vizualizer_Plugin("shop");
-        parent::__construct($loader->loadTable("OrderDetails"), $values);
+        parent::__construct($loader->loadTable("PaymentTokens"), $values);
     }
 
     /**
      * 主キーでデータを取得する。
      *
-     * @param $order_detail_id 注文詳細ID
+     * @param $payment_id 決済ID
      */
-    public function findByPrimaryKey($order_detail_id)
+    public function findByPrimaryKey($payment_token_id)
     {
-        $this->findBy(array("order_detail_id" => $order_detail_id));
+        $this->findBy(array("payment_token_id" => $payment_token_id));
+    }
+
+    /**
+     * 顧客IDと決済IDからデータを取得する。
+     */
+    public function findAllByCustomerPayment($customer_id, $payment_id){
+        return $this->findAllBy(array("customer_id" => $customer_id, "payment_id" => $payment_id));
+    }
+
+    /**
+     * 決済の情報を取得する。
+     */
+    public function payment(){
+        $loader = new Vizualizer_Plugin("shop");
+        $model = $loader->loadModel("Payment");
+        $model->findByPrimaryKey($this->payment_id);
+        return $model;
+    }
+
+    /**
+     * トークンの情報を取得する。
+     */
+    public function getInfo(){
+        $webpay = new WebPay\WebPay($this->payment()->payment_secret);
+        return $webpay->token->retrieve($this->token);
     }
 }

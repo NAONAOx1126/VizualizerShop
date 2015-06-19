@@ -57,7 +57,7 @@ class VizualizerShop_Model_SpecialShip extends Vizualizer_Plugin_Model
      */
     public function findAllByShipId($ship_id)
     {
-        return $this->findAllBy(array("ship_id" => $ship_id), "ship_plan_time_code");
+        return $this->findAllBy(array("ship_id" => $ship_id), "LENGTH(".$this->access->address_prefix.")", true);
     }
 
     /**
