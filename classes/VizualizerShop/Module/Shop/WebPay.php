@@ -44,7 +44,7 @@ class VizualizerShop_Module_Shop_WebPay extends Vizualizer_Plugin_Module
         $company = $loader->loadModel("Company");
         $company->findByPrimaryKey($post["company_id"]);
         $loader = new Vizualizer_Plugin("shop");
-        $company = $loader->loadModel("Content");
+        $content = $loader->loadModel("Content");
 
         // WebPayにショップ情報を送信するための詳細データを作成
         $details = array();
