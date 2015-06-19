@@ -28,7 +28,7 @@
  * @package VizualizerShop
  * @author Naohisa Minagawa <info@vizualizer.jp>
  */
-class VizualizerShop_Module_RedirctShop extends Vizualizer_Plugin_Module
+class VizualizerShop_Module_RedirectShop extends Vizualizer_Plugin_Module
 {
 
     function execute($params)
@@ -38,6 +38,8 @@ class VizualizerShop_Module_RedirctShop extends Vizualizer_Plugin_Module
             $loader = new Vizualizer_Plugin("shop");
             $model = $loader->loadModel("Content");
 
+            echo "isLimitedCompany = ".$model->isLimitedCompany()."<br>\r\n";
+            echo "limitCompanyId = ".$model->limitCompanyId()."<br>\r\n";
             if($model->isLimitedCompany() && $model->limitCompanyId() == 0){
                 $this->redirect("http://".$params->get("shop").".".Vizualizer_Configure::get("shop_mall_domain").$_SERVER["REQUEST_URI"]);
             }
