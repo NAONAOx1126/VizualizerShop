@@ -23,12 +23,12 @@
  */
 
 /**
- * ショップを指定する必要があるページに対して、ショップが指定されていない場合、指定されたショップにリダイレクトする。
+ * ショップを指定する必要があるショップを指定しなかった場合に404を返すようにする。
  *
  * @package VizualizerShop
  * @author Naohisa Minagawa <info@vizualizer.jp>
  */
-class VizualizerShop_Module_RedirectShop extends Vizualizer_Plugin_Module
+class VizualizerShop_Module_Filter extends Vizualizer_Plugin_Module
 {
 
     function execute($params)
@@ -40,9 +40,13 @@ class VizualizerShop_Module_RedirectShop extends Vizualizer_Plugin_Module
 
             echo "isLimitedCompany = ".$model->isLimitedCompany()."<br>\r\n";
             echo "limitCompanyId = ".$model->limitCompanyId()."<br>\r\n";
+            /*
             if($model->isLimitedCompany() && $model->limitCompanyId() == 0){
-                $this->redirect("http://".Vizualizer_Configure::get("default_shop_domain").".".Vizualizer_Configure::get("shop_mall_domain").$_SERVER["REQUEST_URI"]);
+                ob_end_clean();
+                header("HTTP/1.1 404 Not Found");
+                exit;
             }
+            */
         }
     }
 }
