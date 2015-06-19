@@ -68,10 +68,10 @@ class VizualizerShop_Model_Cart extends VizualizerShop_Model_MallModel
     protected function saveCart(){
         if($this->enableSaveCart){
             $data = array();
-            if(!empty($this->getSubscription())){
+            if(!empty($this->subscription)){
                 $data["subscription"] = $this->getSubscription()->toArray();
             }
-            if(is_array($this->getProducts()) && !empty($this->getProducts())){
+            if(is_array($this->products) && !empty($this->products)){
                 $data["products"] = array();
                 foreach($this->getProducts() as $product){
                     $data["products"][] = $product->toArray();
@@ -312,7 +312,7 @@ class VizualizerShop_Model_Cart extends VizualizerShop_Model_MallModel
      * 設定済み顧客情報が関連づいていない場合は設定できない。
      */
     public function setCustomerShip($customerShip){
-        if($this->customer && $customerShip && $customerShip->customer_id == $this->customer->customer_id){
+        if($this->customer && $customerShip && (empty($customerShip->customer_id) || $customerShip->customer_id == $this->customer->customer_id)){
             $this->customerShip = $customerShip;
             $this->saveCart();
             return true;
@@ -430,7 +430,7 @@ class VizualizerShop_Model_Cart extends VizualizerShop_Model_MallModel
      * 配送料を取得
      */
     public function getShipFee(){
-        $shipFee = $this->ship->getShipFee($this->customerShip->pref, $this->customerShip->address1, $this->customerShip->address2);
+        $shipFee = $this->ship->getShipFee($this->customerShip->ship_pref, $this->customerShip->ship_address1, $this->customerShip->ship_address2);
         return $shipFee;
     }
 
@@ -469,6 +469,7 @@ class VizualizerShop_Model_Cart extends VizualizerShop_Model_MallModel
             $subscription->customer_id = $this->customer->customer_id;
             $subscription->customer_ship_id = $this->customerShip->customer_ship_id;
             $subscription->subscription_id = $this->subscription->subscription_id;
+            $subscription->payment_id = $this->payment->payment_id;
             $subscription->ship_id = $this->ship->ship_id;
             $subscription->subscription_time = Vizualizer::now()->date("Y-m-d H:i:s");
             switch($this->subscription->interval_type){
@@ -614,6 +615,7 @@ class VizualizerShop_Model_Cart extends VizualizerShop_Model_MallModel
             $orderShip->save();
 
             // 購入情報から注文詳細情報を登録
+            Vizualzier_Logger::writeDebug(print_r($this->products, true));
             foreach($this->products as $productOption){
                 $product = $productOption->product();
                 $detail = $loader->loadModel("OrderDetail");
@@ -633,32 +635,34 @@ class VizualizerShop_Model_Cart extends VizualizerShop_Model_MallModel
                 $templateName = Vizualizer_Configure::get("ordermail_template");
                 $attr = Vizualizer::attr();
                 $template = $attr["template"];
-                $body = $template->fetch($templateName.".txt");
+                if(!empty($template)){
+                    $body = $template->fetch($templateName.".txt");
 
-                // ショップの情報を取得
-                $loader = new Vizualizer_Plugin("admin");
-                $company = $loader->loadModel("Company");
-                if($this->isLimitedCompany() && $this->limitCompanyId() > 0){
-                    $company->findByPrimaryKey($this->limitCompanyId());
-                }else{
-                    $company->findBy(array());
+                    // ショップの情報を取得
+                    $loader = new Vizualizer_Plugin("admin");
+                    $company = $loader->loadModel("Company");
+                    if($this->isLimitedCompany() && $this->limitCompanyId() > 0){
+                        $company->findByPrimaryKey($this->limitCompanyId());
+                    }else{
+                        $company->findBy(array());
+                    }
+
+                    // 購入者にメール送信
+                    $mail = new Vizualizer_Sendmail();
+                    $mail->setFrom($company->email);
+                    $mail->setTo($this->customer->email);
+                    $mail->setSubject($title);
+                    $mail->addBody($body);
+                    $mail->send();
+
+                    // ショップにメール送信
+                    $mail = new Vizualizer_Sendmail();
+                    $mail->setFrom($this->customer->email);
+                    $mail->setTo($company->email);
+                    $mail->setSubject($title);
+                    $mail->addBody($body);
+                    $mail->send();
                 }
-
-                // 購入者にメール送信
-                $mail = new Vizualizer_Sendmail();
-                $mail->setFrom($company->email);
-                $mail->setTo($this->customer->email);
-                $mail->setSubject($title);
-                $mail->addBody($body);
-                $mail->send();
-
-                // ショップにメール送信
-                $mail = new Vizualizer_Sendmail();
-                $mail->setFrom($this->customer->email);
-                $mail->setTo($company->email);
-                $mail->setSubject($title);
-                $mail->addBody($body);
-                $mail->send();
             }
 
             return $order;

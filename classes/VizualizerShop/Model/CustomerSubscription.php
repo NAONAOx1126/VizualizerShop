@@ -65,4 +65,41 @@ class VizualizerShop_Model_CustomerSubscription extends Vizualizer_Plugin_Model
         $model->findByPrimaryKey($this->subscription_id);
         return $model;
     }
+
+    /**
+     * 定期購入の情報を元に注文を作成
+     */
+    public function purchase($order_code = ""){
+        // カートを生成
+        $loader = new Vizualizer_Plugin("shop");
+        $cart = $loader->loadModel("Cart");
+
+        // 顧客情報をカートに設定
+        $memberLoader = new Vizualizer_Plugin("member");
+        $customer = $memberLoader->loadModel("Customer");
+        $customer->findByPrimaryKey($this->customer_id);
+        $cart->setCustomer($customer);
+
+        // 配送先情報をカートに設定
+        $customerShip = $loader->loadModel("CustomerShip");
+        $customerShip->findByPrimaryKey($this->customer_id);
+        $cart->setCustomerShip($customerShip);
+
+        // 決済情報をカートに設定
+        $payment = $loader->loadModel("Payment");
+        $payment->findByPrimaryKey($this->payment_id);
+        $cart->setPayment($payment);
+
+        // 配送情報をカートに設定
+        $ship = $loader->loadModel("Ship");
+        $payment->findByPrimaryKey($this->ship_id);
+        $cart->setShip($ship);
+
+        // カートに商品を追加
+        $cart->clearProducts();
+        $cart->addProductById($this->subscription()->product_option_id);
+
+        // 購入を確定
+        $cart->purchase($order_code);
+    }
 }
