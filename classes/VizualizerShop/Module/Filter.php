@@ -37,14 +37,10 @@ class VizualizerShop_Module_Filter extends Vizualizer_Plugin_Module
         $loader = new Vizualizer_Plugin("shop");
         $model = $loader->loadModel("Content");
 
-        echo "isLimitedCompany = ".$model->isLimitedCompany()."<br>\r\n";
-        echo "limitCompanyId = ".$model->limitCompanyId()."<br>\r\n";
-        /*
         if($model->isLimitedCompany() && $model->limitCompanyId() == 0){
             ob_end_clean();
             header("HTTP/1.1 404 Not Found");
             exit;
         }
-        */
     }
 }
