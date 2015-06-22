@@ -76,7 +76,9 @@ class VizualizerShop_Module_Purchase_WebPay extends Vizualizer_Plugin_Module
                     $adminLoader = new Vizualizer_Plugin("admin");
                     $company = $adminLoader->loadModel("Company");
                     $company->findByPrimaryKey($subscription->company_id);
-                    $data["shop"] = $company->company_extra_code;
+                    if($company->company_extra_code != ""){
+                        $data["shop"] = $company->company_extra_code;
+                    }
                 }
                 $data["amount"] = $subscription->price;
                 $data["currency"] = $params->get("currency", "jpy");
@@ -92,7 +94,9 @@ class VizualizerShop_Module_Purchase_WebPay extends Vizualizer_Plugin_Module
                     $adminLoader = new Vizualizer_Plugin("admin");
                     $company = $adminLoader->loadModel("Company");
                     $company->findByPrimaryKey($result->company_id);
-                    $data["shop"] = $company->company_extra_code;
+                    if($company->company_extra_code != ""){
+                        $data["shop"] = $company->company_extra_code;
+                    }
                 }
                 $data["amount"] = $result->payment_total;
                 $data["currency"] = $params->get("currency", "jpy");
