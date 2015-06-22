@@ -52,13 +52,13 @@ class VizualizerShop_Module_Purchase_WebPay extends Vizualizer_Plugin_Module
                 $usePoint = $post[$params->get("point")];
             }
             $result = $cart->purchase("", $usePoint, $params->get("order_status", 0));
+            $webpay = new WebPay(Vizualizer_Configure::get(self::WEBPAY_SECRET_KEY));
             if($result instanceof VizualizerShop_Model_CustomerSubscription){
                 // 定期購入の場合
                 $memberLoader = new Vizualizer_Plugin("member");
                 $customer = $memberLoader->loadModel("Customer");
                 $customer->findByPrimaryKey($result->customer_id);
                 if(empty($customer->customer_code)){
-                    $webpay = new WebPay(Vizualizer_Configure::get(self::WEBPAY_SECRET_KEY));
                     $data = array();
                     $data["card"] = $post["webpay-token"];
                     $data["email"] = $customer->email;
@@ -76,7 +76,9 @@ class VizualizerShop_Module_Purchase_WebPay extends Vizualizer_Plugin_Module
                     $adminLoader = new Vizualizer_Plugin("admin");
                     $company = $adminLoader->loadModel("Company");
                     $company->findByPrimaryKey($subscription->company_id);
-                    $data["shop"] = $company->description;
+                    if($company->company_extra_code != ""){
+                        $data["shop"] = $company->company_extra_code;
+                    }
                 }
                 $data["amount"] = $subscription->price;
                 $data["currency"] = $params->get("currency", "jpy");
@@ -87,8 +89,15 @@ class VizualizerShop_Module_Purchase_WebPay extends Vizualizer_Plugin_Module
                 $result->update();
             }elseif($result instanceof VizualizerShop_Model_Order){
                 // 通常注文の場合
-                $webpay = new WebPay(Vizualizer_Configure::get(self::WEBPAY_SECRET_KEY));
                 $data = array();
+                if($cart->isLimitedCompany()){
+                    $adminLoader = new Vizualizer_Plugin("admin");
+                    $company = $adminLoader->loadModel("Company");
+                    $company->findByPrimaryKey($result->company_id);
+                    if($company->company_extra_code != ""){
+                        $data["shop"] = $company->company_extra_code;
+                    }
+                }
                 $data["amount"] = $result->payment_total;
                 $data["currency"] = $params->get("currency", "jpy");
                 $data["card"] = $post["webpay-token"];

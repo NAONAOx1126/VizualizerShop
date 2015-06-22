@@ -206,11 +206,13 @@ class VizualizerShop_Model_Cart extends VizualizerShop_Model_MallModel
             // 商品情報が空の場合は初期化
             if(empty($this->products)){
                 $index = 1;
-                $this->products = array();
+                $products = array();
             }else{
                 $index = max(array_keys($this->products)) + 1;
+                $products = $this->products;
             }
-            $this->products[$index] = $productOption;
+            $products[$index] = $productOption;
+            $this->products = $products;
             $this->setQuantity($index, $quantity);
         }
     }
@@ -219,14 +221,17 @@ class VizualizerShop_Model_Cart extends VizualizerShop_Model_MallModel
      * カートに追加した商品の数量を追加
      */
     public function addQuantity($index, $quantity){
-        $this->setQuantity($index, $this->products[$index]->quantity + $quantity);
+        $products = $this->products;
+        $this->setQuantity($index, $products[$index]->quantity + $quantity);
     }
 
     /**
      * カートに追加した商品の数量を変更
      */
     public function setQuantity($index, $quantity){
-        $this->products[$index]->quantity = $quantity;
+        $products = $this->products;
+        $products[$index]->quantity = $quantity;
+        $this->products = $products;
         $this->checkQuantity($index);
         $this->saveCart();
     }
@@ -265,7 +270,8 @@ class VizualizerShop_Model_Cart extends VizualizerShop_Model_MallModel
      * 購入数量が規定範囲に収まっているかチェックし、規定範囲外の場合は補正する。
      */
     private function checkQuantity($index){
-        $product = $this->products[$index];
+        $products = $this->products;
+        $product = $products[$index];
         if($product){
             $result = true;
             // 在庫無制限でなく、購入数量が在庫数量を超えている場合は購入数量を制限
@@ -586,20 +592,20 @@ class VizualizerShop_Model_Cart extends VizualizerShop_Model_MallModel
             // 配送先情報から配送情報を登録
             $orderShip = $loader->loadModel("OrderShip");
             $orderShip->order_id = $order->order_id;
-            $orderShip->ship_company_name = $this->customerShip->company_name;
-            $orderShip->ship_division_name = $this->customerShip->division_name;
-            $orderShip->ship_sei = $this->customerShip->sei;
-            $orderShip->ship_mei = $this->customerShip->mei;
-            $orderShip->ship_sei_kana = $this->customerShip->sei_kana;
-            $orderShip->ship_mei_kana = $this->customerShip->mei_kana;
-            $orderShip->ship_zip1 = $this->customerShip->zip1;
-            $orderShip->ship_zip2 = $this->customerShip->zip2;
-            $orderShip->ship_pref = $this->customerShip->pref;
-            $orderShip->ship_address1 = $this->customerShip->address1;
-            $orderShip->ship_address2 = $this->customerShip->address2;
-            $orderShip->ship_tel1 = $this->customerShip->tel1;
-            $orderShip->ship_tel2 = $this->customerShip->tel2;
-            $orderShip->ship_tel3 = $this->customerShip->tel3;
+            $orderShip->ship_company_name = $this->customerShip->ship_company_name;
+            $orderShip->ship_division_name = $this->customerShip->ship_division_name;
+            $orderShip->ship_sei = $this->customerShip->ship_sei;
+            $orderShip->ship_mei = $this->customerShip->ship_mei;
+            $orderShip->ship_sei_kana = $this->customerShip->ship_sei_kana;
+            $orderShip->ship_mei_kana = $this->customerShip->ship_mei_kana;
+            $orderShip->ship_zip1 = $this->customerShip->ship_zip1;
+            $orderShip->ship_zip2 = $this->customerShip->ship_zip2;
+            $orderShip->ship_pref = $this->customerShip->ship_pref;
+            $orderShip->ship_address1 = $this->customerShip->ship_address1;
+            $orderShip->ship_address2 = $this->customerShip->ship_address2;
+            $orderShip->ship_tel1 = $this->customerShip->ship_tel1;
+            $orderShip->ship_tel2 = $this->customerShip->ship_tel2;
+            $orderShip->ship_tel3 = $this->customerShip->ship_tel3;
             $orderShip->shipment_id = $this->ship->ship_id;
             $orderShip->shipment_name = $this->ship->ship_name;
             $orderShip->shipment_status = VizualizerShop_Model_Ship::SHIP_NEW;
@@ -615,7 +621,7 @@ class VizualizerShop_Model_Cart extends VizualizerShop_Model_MallModel
             $orderShip->save();
 
             // 購入情報から注文詳細情報を登録
-            Vizualzier_Logger::writeDebug(print_r($this->products, true));
+            Vizualizer_Logger::writeDebug(print_r($this->products, true));
             foreach($this->products as $productOption){
                 $product = $productOption->product();
                 $detail = $loader->loadModel("OrderDetail");
