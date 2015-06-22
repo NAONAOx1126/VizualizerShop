@@ -221,7 +221,8 @@ class VizualizerShop_Model_Cart extends VizualizerShop_Model_MallModel
      * カートに追加した商品の数量を追加
      */
     public function addQuantity($index, $quantity){
-        $this->setQuantity($index, $this->products[$index]->quantity + $quantity);
+        $products = $this->products;
+        $this->setQuantity($index, $products[$index]->quantity + $quantity);
     }
 
     /**
@@ -269,7 +270,8 @@ class VizualizerShop_Model_Cart extends VizualizerShop_Model_MallModel
      * 購入数量が規定範囲に収まっているかチェックし、規定範囲外の場合は補正する。
      */
     private function checkQuantity($index){
-        $product = $this->products[$index];
+        $products = $this->products;
+        $product = $products[$index];
         if($product){
             $result = true;
             // 在庫無制限でなく、購入数量が在庫数量を超えている場合は購入数量を制限
