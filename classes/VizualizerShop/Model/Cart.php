@@ -206,11 +206,13 @@ class VizualizerShop_Model_Cart extends VizualizerShop_Model_MallModel
             // 商品情報が空の場合は初期化
             if(empty($this->products)){
                 $index = 1;
-                $this->products = array();
+                $products = array();
             }else{
                 $index = max(array_keys($this->products)) + 1;
+                $products = $this->products;
             }
-            $this->products[$index] = $productOption;
+            $products[$index] = $productOption;
+            $this->products = $products;
             $this->setQuantity($index, $quantity);
         }
     }
@@ -615,7 +617,7 @@ class VizualizerShop_Model_Cart extends VizualizerShop_Model_MallModel
             $orderShip->save();
 
             // 購入情報から注文詳細情報を登録
-            Vizualzier_Logger::writeDebug(print_r($this->products, true));
+            Vizualizer_Logger::writeDebug(print_r($this->products, true));
             foreach($this->products as $productOption){
                 $product = $productOption->product();
                 $detail = $loader->loadModel("OrderDetail");
