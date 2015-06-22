@@ -228,7 +228,9 @@ class VizualizerShop_Model_Cart extends VizualizerShop_Model_MallModel
      * カートに追加した商品の数量を変更
      */
     public function setQuantity($index, $quantity){
-        $this->products[$index]->quantity = $quantity;
+        $products = $this->products;
+        $products[$index]->quantity = $quantity;
+        $this->products = $products;
         $this->checkQuantity($index);
         $this->saveCart();
     }
