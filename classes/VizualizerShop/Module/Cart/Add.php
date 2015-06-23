@@ -46,16 +46,16 @@ class VizualizerShop_Module_Cart_Add extends Vizualizer_Plugin_Module
             $cart->setSubscriptionById($post["subscription_id"]);
             Vizualizer_Logger::writeDebug("Add subscription to Cart : ".$post["subscription_id"]);
             $post->remove("subscription_id");
-        }elseif($post["product_id"] > 0){
-            // product_idが渡された場合は、商品を追加
-            $cart->addProductById($post["product_id"]);
-            Vizualizer_Logger::writeDebug("Add product to Cart : ".$post["product_id"]);
-            $post->remove("product_id");
         }elseif($post["product_option_id"] > 0){
             // product_option_idが渡された場合は、商品を追加
             $cart->addProductById($post["product_option_id"]);
             Vizualizer_Logger::writeDebug("Add product to Cart : ".$post["product_option_id"]);
             $post->remove("product_option_id");
+        }elseif($post["product_id"] > 0){
+            // product_idが渡された場合は、商品を追加
+            $cart->addProductById($post["product_id"]);
+            Vizualizer_Logger::writeDebug("Add product to Cart : ".$post["product_id"]);
+            $post->remove("product_id");
         }
     }
 }
