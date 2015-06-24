@@ -127,9 +127,9 @@ class VizualizerShop_Json_WebPayEvent
             exit;
         }
 
-        // タイプが正しくない場合はエラーとして返す
+        // タイプに対応する処理が存在しない場合は正常終了として返す
         Vizualizer_Logger::writeDebug("Not Found for Access Type : ".$methodName);
-        header("HTTP/1.1 404 Not Found");
+        echo "Not Found for Access Type : ".$methodName;
         exit;
     }
 }
