@@ -82,7 +82,7 @@ class VizualizerShop_Model_CustomerSubscription extends Vizualizer_Plugin_Model
 
         // 配送先情報をカートに設定
         $customerShip = $loader->loadModel("CustomerShip");
-        $customerShip->findByPrimaryKey($this->customer_id);
+        $customerShip->findByPrimaryKey($this->customer_ship_id);
         $cart->setCustomerShip($customerShip);
 
         // 決済情報をカートに設定
