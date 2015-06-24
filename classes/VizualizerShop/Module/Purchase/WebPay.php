@@ -41,6 +41,7 @@ class VizualizerShop_Module_Purchase_WebPay extends Vizualizer_Plugin_Module
         $cart = $loader->loadModel("Cart");
 
         // トランザクションの開始
+        $memberConnection = Vizualizer_Database_Factory::begin("member");
         $connection = Vizualizer_Database_Factory::begin("shop");
 
         try {
@@ -110,8 +111,10 @@ class VizualizerShop_Module_Purchase_WebPay extends Vizualizer_Plugin_Module
             }
 
             // エラーが無かった場合、処理をコミットする。
+            Vizualizer_Database_Factory::commit($memberConnection);
             Vizualizer_Database_Factory::commit($connection);
         } catch (Exception $e) {
+            Vizualizer_Database_Factory::rollback($memberConnection);
             Vizualizer_Database_Factory::rollback($connection);
             throw new Vizualizer_Exception_Database($e);
         }
