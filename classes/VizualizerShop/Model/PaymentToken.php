@@ -73,6 +73,7 @@ class VizualizerShop_Model_PaymentToken extends VizualizerShop_Model_MallModel
      */
     public function getInfo(){
         $webpay = new WebPay\WebPay($this->payment()->payment_secret);
-        return $webpay->token->retrieve($this->token);
+        $customer = $webpay->customer->retrieve($this->token);
+        return $customer->activeCard;
     }
 }

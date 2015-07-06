@@ -69,7 +69,16 @@ class VizualizerShop_Model_CustomerSubscription extends Vizualizer_Plugin_Model
     /**
      * 定期購入の情報を元に注文を作成
      */
-    public function purchase($order_code = ""){
+    public function purchase($orderTime = null, $order_code = ""){
+        // 注文日の指定がない場合は現在日時を注文日時に指定
+        if($orderTime == null){
+            $orderTime = time();
+        }
+
+        // 注文日時を変更
+        Vizualizer_Configure::set("SYSTEM_CURRENT_TIME", date("Y-m-d H:i:s", $orderTime));
+        Vizualizer_Data_Calendar::reset();
+
         // カートを生成
         $loader = new Vizualizer_Plugin("shop");
         $cart = $loader->loadModel("Cart");

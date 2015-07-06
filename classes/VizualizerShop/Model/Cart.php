@@ -197,6 +197,7 @@ class VizualizerShop_Model_Cart extends VizualizerShop_Model_MallModel
         $productExists = false;
         foreach($this->products as $index => $product){
             if($product->product_option_id == $productOption->product_option_id){
+                Vizualizer_Logger::writeInfo("Add Quantity to Product in Cart : ".$productOption->product()->product_name);
                 $this->addQuantity($index, $quantity);
                 $productExists = true;
             }
@@ -213,6 +214,7 @@ class VizualizerShop_Model_Cart extends VizualizerShop_Model_MallModel
             }
             $products[$index] = $productOption;
             $this->products = $products;
+            Vizualizer_Logger::writeInfo("Add Product to Cart : ".$productOption->product()->product_name);
             $this->setQuantity($index, $quantity);
         }
     }
@@ -621,7 +623,6 @@ class VizualizerShop_Model_Cart extends VizualizerShop_Model_MallModel
             $orderShip->save();
 
             // 購入情報から注文詳細情報を登録
-            Vizualizer_Logger::writeDebug(print_r($this->products, true));
             foreach($this->products as $productOption){
                 $product = $productOption->product();
                 $detail = $loader->loadModel("OrderDetail");

@@ -38,9 +38,13 @@ class VizualizerShop_Module_Filter extends Vizualizer_Plugin_Module
         $model = $loader->loadModel("Content");
 
         if($model->isLimitedCompany() && $model->limitCompanyId() == 0){
-            ob_end_clean();
-            header("HTTP/1.1 404 Not Found");
-            exit;
+            if ($params->check("error")) {
+                throw new Vizualizer_Exception_Invalid("page", "ページが見つかりません。");
+            } else {
+                ob_end_clean();
+                header("HTTP/1.1 404 Not Found");
+                exit;
+            }
         }
     }
 }

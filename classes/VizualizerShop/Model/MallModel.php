@@ -33,7 +33,7 @@ class VizualizerShop_Model_MallModel extends Vizualizer_Plugin_Model
     /**
      * アクセスドメインから取得したショップID
      */
-    private $domainShopId;
+    private static $domainShopId;
 
     /**
      * データベースモデルを初期化する。
@@ -45,14 +45,23 @@ class VizualizerShop_Model_MallModel extends Vizualizer_Plugin_Model
     }
 
     /**
+     * ドメインのショップIDを強制的に指定する。
+     */
+    public function setDomainShopId($shopId)
+    {
+        self::$domainShopId = $shopId;
+    }
+
+    /**
      * アクセスしたドメインからショップコードを取得する。
      */
-    private function getDomainShopId(){
-        if(!$this->domainShopId){
+    private function getDomainShopId()
+    {
+        if(!self::$domainShopId){
             $shopCode = preg_replace("/\\.".preg_quote(Vizualizer_Configure::get("shop_mall_domain"))."$/", "", $_SERVER["SERVER_NAME"]);
 
             // 結果的にIDを取得できない場合は*を返すようにする。
-            $this->domainShopId = "*";
+            self::$domainShopId = "*";
 
             if($shopCode != $_SERVER["SERVER_NAME"]){
                 // 正しくショップコードが取得できた場合、ショップコードから対応する法人を取得
@@ -60,13 +69,13 @@ class VizualizerShop_Model_MallModel extends Vizualizer_Plugin_Model
                 $model = $loader->loadModel("Company");
                 $model->findBy(array("company_code" => $shopCode));
                 if($model->company_id > 0){
-                    $this->domainShopId = $model->company_id;
+                    self::$domainShopId = $model->company_id;
                 }
             }
         }
 
         // 結果として得られたショップIDを返す。
-        return $this->domainShopId;
+        return self::$domainShopId;
     }
 
     /**
@@ -152,7 +161,7 @@ class VizualizerShop_Model_MallModel extends Vizualizer_Plugin_Model
      */
     public function findAllBy($values = array(), $order = "", $reverse = false, $forceOperator = false)
     {
-        if ($this->isLimitedCompany()) {
+        if ($this->isLimitedCompany() && $this->limitCompanyId() > 0) {
             $values["company_id"] = $this->limitCompanyId();
         }
         return parent::findAllBy($values, $order, $reverse, $forceOperator);

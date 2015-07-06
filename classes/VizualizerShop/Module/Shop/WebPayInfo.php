@@ -50,7 +50,6 @@ class VizualizerShop_Module_Shop_WebPayInfo extends Vizualizer_Plugin_Module
             if(!empty($company->company_extra_code)){
                 // 登録済みの場合は、データを更新
                 $result = $webpay->shop->retrieve($company->company_extra_code);
-                Vizualizer_Logger::writeDebug(print_r($result, true));
 
                 $attr = Vizualizer::attr();
                 $attr[$params->get("result", "wpinfo")] = $result;
