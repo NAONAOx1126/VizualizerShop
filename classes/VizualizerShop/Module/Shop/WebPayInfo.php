@@ -40,11 +40,14 @@ class VizualizerShop_Module_Shop_WebPayInfo extends Vizualizer_Plugin_Module
         // 登録したショップのデータを呼び出し
         $loader = new Vizualizer_Plugin("shop");
         $content = $loader->loadModel("Content");
-        if($content->isLimitedCompany() && $content->limitCompanyId() > 0){
-            $loader = new Vizualizer_Plugin("admin");
-            $company = $loader->loadModel("Company");
+        $loader = new Vizualizer_Plugin("admin");
+        $company = $loader->loadModel("Company");
+        if ($content->isLimitedCompany() && $content->limitCompanyId() > 0){
             $company->findByPrimaryKey($content->limitCompanyId());
-
+        } elseif ($post["company_id"] > 0) {
+            $company->findByPrimaryKey($post["company_id"]);
+        }
+        if($company->company_id > 0){
             // 登録データをWebPayに追加する
             $webpay = new WebPay(Vizualizer_Configure::get(self::WEBPAY_SECRET_KEY));
             if(!empty($company->company_extra_code)){

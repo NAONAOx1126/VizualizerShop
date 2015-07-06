@@ -19,10 +19,11 @@ class VizualizerShop_Json_WebPayEvent
         $customerSubscription->findBy(array("customer_subscription_code" => $data->id));
 
         // ドメインのショップIDを強制的に指定する。
+        $shopMallActivated = Vizualizer_Configure::get("shop_mall_activated");
         Vizualizer_Configure::set("shop_mall_activated", false);
         $subscription = $customerSubscription->subscription();
         $customerSubscription->subscription()->setDomainShopId($subscription->company_id);
-        Vizualizer_Configure::set("shop_mall_activated", true);
+        Vizualizer_Configure::set("shop_mall_activated", $shopMallActivated);
 
         // トランザクションの開始
         $connection = Vizualizer_Database_Factory::begin("shop");
