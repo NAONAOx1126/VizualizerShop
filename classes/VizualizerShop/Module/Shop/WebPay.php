@@ -41,10 +41,14 @@ class VizualizerShop_Module_Shop_WebPay extends Vizualizer_Plugin_Module
             // 登録したショップのデータを呼び出し
             $loader = new Vizualizer_Plugin("shop");
             $content = $loader->loadModel("Content");
-            if($content->isLimitedCompany() && $content->limitCompanyId() > 0){
+            if($content->isLimitedCompany() && ($content->limitCompanyId() > 0 || $post["company_id"] > 0)){
                 $loader = new Vizualizer_Plugin("admin");
                 $company = $loader->loadModel("Company");
-                $company->findByPrimaryKey($content->limitCompanyId());
+                if ($content->limitCompanyId() > 0) {
+                    $company->findByPrimaryKey($content->limitCompanyId());
+                } else {
+                    $company->findByPrimaryKey($post["company_id"]);
+                }
                 // WebPayにショップ情報を送信するための詳細データを作成
                 $details = array();
                 $details["url"] = "https://".$company->company_code.".".Vizualizer_Configure::get("shop_mall_domain");
@@ -52,8 +56,8 @@ class VizualizerShop_Module_Shop_WebPay extends Vizualizer_Plugin_Module
                 $details["name_alphabet"] = $company->company_name_alphabet;
                 $details["name_kana"] = $company->company_name_kana;
                 $details["product"] = $params->get("product", $content->company_products);
-                $details["pricing_url"] = "https://".$company->company_code.".".Vizualizer_Configure::get("shop_mall_domain").$params->get("pricing");
-                $details["commercial_law_url"] = "https://".$company->company_code.".".Vizualizer_Configure::get("shop_mall_domain").$params->get("law");
+                $details["pricing_url"] = "https://".$company->company_code.".".Vizualizer_Configure::get("shop_mall_domain").VIZUALIZER_SUBDIR.$params->get("pricing");
+                $details["commercial_law_url"] = "https://".$company->company_code.".".Vizualizer_Configure::get("shop_mall_domain").VIZUALIZER_SUBDIR.$params->get("law");
                 $details["price_min"] = $content->company_min_price;
                 $details["price_max"] = $content->company_max_price;
                 $details["price_average"] = $content->company_avg_price;
@@ -92,13 +96,13 @@ class VizualizerShop_Module_Shop_WebPay extends Vizualizer_Plugin_Module
                     );
                     $result = $webpay->shop->create($data);
                 }
-                Vizualizer_Logger::writeDebug(print_r($result, true));
 
                 // トランザクションの開始
                 $connection = Vizualizer_Database_Factory::begin("admin");
 
                 try {
                     $company->company_extra_code = $result->id;
+                    $company->company_status = "2";
                     $company->save();
 
                     // エラーが無かった場合、処理をコミットする。

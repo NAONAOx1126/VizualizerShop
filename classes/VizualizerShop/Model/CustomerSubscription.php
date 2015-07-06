@@ -69,7 +69,7 @@ class VizualizerShop_Model_CustomerSubscription extends Vizualizer_Plugin_Model
     /**
      * 定期購入の情報を元に注文を作成
      */
-    public function purchase($order_code = ""){
+    public function purchase($orderTime = null, $order_code = ""){
         // カートを生成
         $loader = new Vizualizer_Plugin("shop");
         $cart = $loader->loadModel("Cart");
@@ -82,7 +82,7 @@ class VizualizerShop_Model_CustomerSubscription extends Vizualizer_Plugin_Model
 
         // 配送先情報をカートに設定
         $customerShip = $loader->loadModel("CustomerShip");
-        $customerShip->findByPrimaryKey($this->customer_id);
+        $customerShip->findByPrimaryKey($this->customer_ship_id);
         $cart->setCustomerShip($customerShip);
 
         // 決済情報をカートに設定
@@ -98,6 +98,20 @@ class VizualizerShop_Model_CustomerSubscription extends Vizualizer_Plugin_Model
         // カートに商品を追加
         $cart->clearProducts();
         $cart->addProductById($this->subscription()->product_option_id);
+
+        // 注文日の指定がない場合は現在日時を注文日時に指定
+        if($orderTime == null){
+            $orderTime = time();
+        }else{
+            // 注文の指定があった場合は、2回目以降の配送扱いとなるため、調整額に合計額のマイナスを設定
+            while($cart->getTotal() !== 0){
+                $cart->setAdjustment(- $cart->getTotal());
+            }
+        }
+
+        // 注文日時を変更
+        Vizualizer_Configure::set("SYSTEM_CURRENT_TIME", date("Y-m-d H:i:s", $orderTime));
+        Vizualizer_Data_Calendar::reset();
 
         // 購入を確定
         $cart->purchase($order_code);

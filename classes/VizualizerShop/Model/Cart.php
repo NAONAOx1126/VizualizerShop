@@ -140,6 +140,8 @@ class VizualizerShop_Model_Cart extends VizualizerShop_Model_MallModel
         if(is_array($data) && array_key_exists("description", $data) && !empty($data["shipTime"])){
             $this->setDescription($data["description"]);
         }
+        $this->setDiscount(0);
+        $this->setAdjustment(0);
     }
 
     /**
@@ -197,6 +199,7 @@ class VizualizerShop_Model_Cart extends VizualizerShop_Model_MallModel
         $productExists = false;
         foreach($this->products as $index => $product){
             if($product->product_option_id == $productOption->product_option_id){
+                Vizualizer_Logger::writeInfo("Add Quantity to Product in Cart : ".$productOption->product()->product_name);
                 $this->addQuantity($index, $quantity);
                 $productExists = true;
             }
@@ -213,6 +216,7 @@ class VizualizerShop_Model_Cart extends VizualizerShop_Model_MallModel
             }
             $products[$index] = $productOption;
             $this->products = $products;
+            Vizualizer_Logger::writeInfo("Add Product to Cart : ".$productOption->product()->product_name);
             $this->setQuantity($index, $quantity);
         }
     }
@@ -398,6 +402,34 @@ class VizualizerShop_Model_Cart extends VizualizerShop_Model_MallModel
     }
 
     /**
+     * 割引金額を設定
+     */
+    public function setDiscount($discount){
+        $this->discount = $discount;
+    }
+
+    /**
+     * 割引金額を取得
+     */
+    public function getDiscount(){
+        return $this->discount;
+    }
+
+    /**
+     * 調整金額を設定
+     */
+    public function setAdjustment($adjustment){
+        $this->adjustment = $adjustment;
+    }
+
+    /**
+     * 調整金額を取得
+     */
+    public function getAdjustment(){
+        return $this->adjustment;
+    }
+
+    /**
      * 商品購入合計金額を取得
      */
     public function getSubTotal(){
@@ -444,7 +476,7 @@ class VizualizerShop_Model_Cart extends VizualizerShop_Model_MallModel
      * 購入金額を取得
      */
     public function getTotal(){
-        return $this->getSubTotal() + $this->getCharge() + $this->getShipFee();
+        return $this->getSubTotal() + $this->getCharge() + $this->getShipFee() + $this->getDiscount() + $this->getAdjustment();
     }
 
     /**
@@ -581,8 +613,8 @@ class VizualizerShop_Model_Cart extends VizualizerShop_Model_MallModel
                 $order->charge = $this->payment->charge1;
             }
             $order->ship_fee = $this->ship->getShipFee($this->customerShip->pref, $this->customerShip->address1, $this->customerShip->address2) + $ship_fees;
-            $order->discount = 0;
-            $order->adjustment = 0;
+            $order->discount = $this->getDiscount();
+            $order->adjustment = $this->getAdjustment();
             $order->total = $order->subtotal + $order->charge + $order->ship_fee - $order->discount + $order->adjustment;
             $order->use_point = $point;
             $order->payment_total = $order->total - $order->use_point;
@@ -621,7 +653,6 @@ class VizualizerShop_Model_Cart extends VizualizerShop_Model_MallModel
             $orderShip->save();
 
             // 購入情報から注文詳細情報を登録
-            Vizualizer_Logger::writeDebug(print_r($this->products, true));
             foreach($this->products as $productOption){
                 $product = $productOption->product();
                 $detail = $loader->loadModel("OrderDetail");

@@ -17,49 +17,32 @@ class VizualizerShop_Json_WebPayEvent
         $loader = new Vizualizer_Plugin("shop");
         $customerSubscription = $loader->loadModel("CustomerSubscription");
         $customerSubscription->findBy(array("customer_subscription_code" => $data->id));
-        if($customerSubscription->customer_subscription_id > 0){
-            $subscription = $customerSubscription->subscription();
 
-        }
+        // ドメインのショップIDを強制的に指定する。
+        $shopMallActivated = Vizualizer_Configure::get("shop_mall_activated");
+        Vizualizer_Configure::set("shop_mall_activated", false);
+        $subscription = $customerSubscription->subscription();
+        $customerSubscription->subscription()->setDomainShopId($subscription->company_id);
+        Vizualizer_Configure::set("shop_mall_activated", $shopMallActivated);
 
         // トランザクションの開始
         $connection = Vizualizer_Database_Factory::begin("shop");
 
         try {
-            // 2日後以降で曜日の該当する日を1回目の発送日に設定
-            $shipTime = $subscription->getNextDelivery(strtotime("+2 day"));
-            Vizualizer_Configure::set("SYSTEM_CURRENT_TIME", date("Y-m-d H:i:s", $shipTime));
-            Vizualizer_Data_Calendar::reset();
-
-            // 定期購入の情報から注文情報を作成
+            // 課金した日を注文日として、注文を作成
             $customerSubscription->purchase();
 
             if($subscription->orders >= 2){
-                // 16日後以降で曜日の該当する日を1回目の発送日に設定
-                $shipTime = $subscription->getNextDelivery(strtotime("+16 day"));
-                Vizualizer_Configure::set("SYSTEM_CURRENT_TIME", date("Y-m-d H:i:s", $shipTime));
-                Vizualizer_Data_Calendar::reset();
-
-                // 定期購入の情報から注文情報を作成
-                $customerSubscription->purchase();
+                // 14日後を注文日として注文を作成
+                $customerSubscription->purchase(strtotime("+14 day"));
             }
 
             if($subscription->orders >= 4){
-                // 9日後以降で曜日の該当する日を1回目の発送日に設定
-                $shipTime = $subscription->getNextDelivery(strtotime("+9 day"));
-                Vizualizer_Configure::set("SYSTEM_CURRENT_TIME", date("Y-m-d H:i:s", $shipTime));
-                Vizualizer_Data_Calendar::reset();
+                // 7日後を注文日として注文を作成
+                $customerSubscription->purchase(strtotime("+7 day"));
 
-                // 定期購入の情報から注文情報を作成
-                $customerSubscription->purchase();
-
-                // 23日後以降で曜日の該当する日を1回目の発送日に設定
-                $shipTime = $subscription->getNextDelivery(strtotime("+23 day"));
-                Vizualizer_Configure::set("SYSTEM_CURRENT_TIME", date("Y-m-d H:i:s", $shipTime));
-                Vizualizer_Data_Calendar::reset();
-
-                // 定期購入の情報から注文情報を作成
-                $customerSubscription->purchase();
+                // 21日後を注文日として注文を作成
+                $customerSubscription->purchase(strtotime("+21 day"));
             }
 
             // エラーが無かった場合、処理をコミットする。
@@ -97,9 +80,7 @@ class VizualizerShop_Json_WebPayEvent
 
         // データを取得しJSONデコードを行う。
         $requestBody = http_get_request_body();
-        Vizualizer_Logger::writeDebug(print_r($requestBody, true));
         $data = json_decode($requestBody);
-        Vizualizer_Logger::writeDebug(print_r($data, true));
 
         // タイプを取得し、キャメルケース化してメソッド名とする。
         $type = $data->type;
@@ -122,14 +103,14 @@ class VizualizerShop_Json_WebPayEvent
             }
         }catch(Exception $e){
             // タイプが正しくない場合はエラーとして返す
-            Vizualizer_Logger::writeAlert("Catched Exception : ".print_r($e, true));
+            Vizualizer_Logger::writeError("Catched Exception", $e);
             header("HTTP/1.1 500 Internal Server Error");
             exit;
         }
 
-        // タイプが正しくない場合はエラーとして返す
+        // タイプに対応する処理が存在しない場合は正常終了として返す
         Vizualizer_Logger::writeDebug("Not Found for Access Type : ".$methodName);
-        header("HTTP/1.1 404 Not Found");
+        echo "Not Found for Access Type : ".$methodName;
         exit;
     }
 }

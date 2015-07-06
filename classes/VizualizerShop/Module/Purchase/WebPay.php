@@ -41,6 +41,7 @@ class VizualizerShop_Module_Purchase_WebPay extends Vizualizer_Plugin_Module
         $cart = $loader->loadModel("Cart");
 
         // トランザクションの開始
+        $memberConnection = Vizualizer_Database_Factory::begin("member");
         $connection = Vizualizer_Database_Factory::begin("shop");
 
         try {
@@ -53,25 +54,58 @@ class VizualizerShop_Module_Purchase_WebPay extends Vizualizer_Plugin_Module
             }
             $result = $cart->purchase("", $usePoint, $params->get("order_status", 0));
             $webpay = new WebPay(Vizualizer_Configure::get(self::WEBPAY_SECRET_KEY));
+
+            // 正常に成功した場合、登録するとしていた場合は、カード情報を登録する。
+            if ($post["save_card"] === "1" && substr_compare($post["webpay-token"], "tok_", 0, 4) === 0 && $result->customer_id > 0) {
+                // 顧客情報を取得する。
+                $memberLoader = new Vizualizer_Plugin("member");
+                $customer = $memberLoader->loadModel("Customer");
+                $customer->findByPrimaryKey($result->customer_id);
+
+                // 顧客登録を行い、トークンを取得する。
+                $data = array();
+                $data["card"] = $post["webpay-token"];
+                $data["email"] = $customer->email;
+                Vizualizer_Logger::writeDebug(print_r($data, true));
+                $wpCustomer = $webpay->customer->create($data);
+                $post->set("webpay-token", $wpCustomer->id);
+
+                // 取得した顧客のIDをトークンとして処理する。
+                $paymentToken = $loader->loadModel("PaymentToken");
+                $paymentToken->findBy(array("customer_id" => $result->customer_id, "payment_id" => $result->payment_id, "token" => $post["webpay-token"]));
+                if (!($paymentToken->payment_token_id > 0)) {
+                    $paymentToken->customer_id = $result->customer_id;
+                    $paymentToken->payment_id = $result->payment_id;
+                    $paymentToken->token = $post["webpay-token"];
+                    $paymentToken->save();
+                }
+            }
+
             if($result instanceof VizualizerShop_Model_CustomerSubscription){
                 // 定期購入の場合
                 $memberLoader = new Vizualizer_Plugin("member");
                 $customer = $memberLoader->loadModel("Customer");
                 $customer->findByPrimaryKey($result->customer_id);
-                if(empty($customer->customer_code)){
-                    $data = array();
-                    $data["card"] = $post["webpay-token"];
-                    $data["email"] = $customer->email;
-                    $wpCustomer = $webpay->customer->create($data);
-                    $customer->customer_code = $wpCustomer->id;
-                    $customer->save();
-                }
-
                 $subscription = $result->subscription();
                 $product = $subscription->productOption()->product();
 
+                if (substr_compare($post["webpay-token"], "tok_", 0, 4) === 0) {
+                    $data = array();
+                    $data["card"] = $post["webpay-token"];
+                    $data["email"] = $customer->email;
+                    Vizualizer_Logger::writeDebug(print_r($data, true));
+                    $wpCustomer = $webpay->customer->create($data);
+                    $result->customer_code = $wpCustomer->id;
+                } elseif (substr_compare($post["webpay-token"], "cus_", 0, 4) === 0) {
+                    $result->customer_code = $post["webpay-token"];
+                } else {
+                    throw new Vizualizer_Exception_Invalid("webpay-token", "渡されたトークンが正しくありません");
+                }
+                Vizualizer_Logger::writeDebug(print_r($result->toArray(), true));
+                $result->update();
+
                 $data = array();
-                $data["customer"] = $customer->customer_code;
+                $data["customer"] = $result->customer_code;
                 if($cart->isLimitedCompany()){
                     $adminLoader = new Vizualizer_Plugin("admin");
                     $company = $adminLoader->loadModel("Company");
@@ -84,8 +118,10 @@ class VizualizerShop_Module_Purchase_WebPay extends Vizualizer_Plugin_Module
                 $data["currency"] = $params->get("currency", "jpy");
                 $data["period"] = "month";
                 $data["description"] = $product->product_name;
+                Vizualizer_Logger::writeDebug(print_r($data, true));
                 $recursion = $webpay->recursion->create($data);
                 $result->customer_subscription_code = $recursion->id;
+                Vizualizer_Logger::writeDebug(print_r($result->toArray(), true));
                 $result->update();
             }elseif($result instanceof VizualizerShop_Model_Order){
                 // 通常注文の場合
@@ -100,9 +136,14 @@ class VizualizerShop_Module_Purchase_WebPay extends Vizualizer_Plugin_Module
                 }
                 $data["amount"] = $result->payment_total;
                 $data["currency"] = $params->get("currency", "jpy");
-                $data["card"] = $post["webpay-token"];
+                if (substr_compare($post["webpay-token"], "tok_", 0, 4) === 0) {
+                    $data["card"] = $post["webpay-token"];
+                } elseif (substr_compare($post["webpay-token"], "cus_", 0, 4) === 0) {
+                    $data["customer"] = $post["webpay-token"];
+                } else {
+                    throw new Vizualizer_Exception_Invalid("webpay-token", "渡されたトークンが正しくありません");
+                }
                 $wpOrder = $webpay->charge->create($data);
-                Vizualizer_Logger::writeDebug(print_r($wpOrder, true));
                 $result->order_code = $wpOrder->id;
                 $result->save();
             }else{
@@ -110,10 +151,12 @@ class VizualizerShop_Module_Purchase_WebPay extends Vizualizer_Plugin_Module
             }
 
             // エラーが無かった場合、処理をコミットする。
+            Vizualizer_Database_Factory::commit($memberConnection);
             Vizualizer_Database_Factory::commit($connection);
         } catch (Exception $e) {
+            Vizualizer_Database_Factory::rollback($memberConnection);
             Vizualizer_Database_Factory::rollback($connection);
-            throw new Vizualizer_Exception_Database($e);
+            throw $e;
         }
 
     }

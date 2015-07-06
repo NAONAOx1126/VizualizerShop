@@ -63,6 +63,10 @@ class VizualizerShop_Model_Content extends VizualizerShop_Model_MallModel
         $this->contents = array();
         $loader = new Vizualizer_Plugin("shop");
         $contentData = $loader->loadModel("ContentData");
+        $post = Vizualizer::request();
+        if ($post["company_id"] > 0) {
+            $contentData->setDomainShopId($post["company_id"]);
+        }
         $contentDatas = $contentData->findAllBy(array());
         foreach($contentDatas as $contentData){
             $this->contents[$contentData->content_key] = $contentData;

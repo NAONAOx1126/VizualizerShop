@@ -23,28 +23,25 @@
  */
 
 /**
- * ショップを指定する必要があるショップを指定しなかった場合に404を返すようにする。
+ * 売上のリストを取得する。
  *
  * @package VizualizerShop
  * @author Naohisa Minagawa <info@vizualizer.jp>
  */
-class VizualizerShop_Module_Filter extends Vizualizer_Plugin_Module
+class VizualizerShop_Module_Sales extends Vizualizer_Plugin_Module
 {
 
     function execute($params)
     {
         // ショップコンテンツを取得する。
         $loader = new Vizualizer_Plugin("shop");
-        $model = $loader->loadModel("Content");
-
-        if($model->isLimitedCompany() && $model->limitCompanyId() == 0){
-            if ($params->check("error")) {
-                throw new Vizualizer_Exception_Invalid("page", "ページが見つかりません。");
-            } else {
-                ob_end_clean();
-                header("HTTP/1.1 404 Not Found");
-                exit;
-            }
+        $model = $loader->loadModel("Sales");
+        $list = $model->findAllBy(array(), "sales_month");
+        $sales = array();
+        foreach($list as $data){
+            $sales[$data->company_id][$data->sales_month] = $data;
         }
+        $attr = Vizualizer::attr();
+        $attr["sales"] = $sales;
     }
 }

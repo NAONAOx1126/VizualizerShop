@@ -23,12 +23,12 @@
  */
 
 /**
- * 決済トークンのモデルです。
+ * ショップ用の売上のモデルです。
  *
  * @package VizualizerShop
  * @author Naohisa Minagawa <info@vizualizer.jp>
  */
-class VizualizerShop_Model_PaymentToken extends VizualizerShop_Model_MallModel
+class VizualizerShop_Model_Sales extends Vizualizer_Plugin_Model
 {
     /**
      * コンストラクタ
@@ -38,42 +38,37 @@ class VizualizerShop_Model_PaymentToken extends VizualizerShop_Model_MallModel
     public function __construct($values = array())
     {
         $loader = new Vizualizer_Plugin("shop");
-        parent::__construct($loader->loadTable("PaymentTokens"), $values);
+        parent::__construct($loader->loadTable("Sales"), $values);
     }
 
     /**
      * 主キーでデータを取得する。
      *
-     * @param $payment_id 決済ID
+     * @param $sales_id 売上ID
      */
-    public function findByPrimaryKey($payment_token_id)
+    public function findByPrimaryKey($sales_id)
     {
-        $this->findBy(array("payment_token_id" => $payment_token_id));
+        $this->findBy(array("sales_id" => $sales_id));
     }
 
     /**
-     * 顧客IDと決済IDからデータを取得する。
+     * 法人IDと年月でデータを取得する。
+     *
+     * @param $company_id 法人ID
+     * @param $month 年月を表す日付文字列
      */
-    public function findAllByCustomerPayment($customer_id, $payment_id){
-        return $this->findAllBy(array("customer_id" => $customer_id, "payment_id" => $payment_id));
+    public function findByCompanyMonth($company_id, $month)
+    {
+        $this->findBy(array("company_id" => $company_id, "sales_month" => date("Y-m-01", strtotime($month))));
     }
 
     /**
-     * 決済の情報を取得する。
+     * 法人IDでデータを取得する。
+     *
+     * @param $company_id 法人ID
      */
-    public function payment(){
-        $loader = new Vizualizer_Plugin("shop");
-        $model = $loader->loadModel("Payment");
-        $model->findByPrimaryKey($this->payment_id);
-        return $model;
-    }
-
-    /**
-     * トークンの情報を取得する。
-     */
-    public function getInfo(){
-        $webpay = new WebPay\WebPay($this->payment()->payment_secret);
-        $customer = $webpay->customer->retrieve($this->token);
-        return $customer->activeCard;
+    public function findAllByCompanyId($company_id)
+    {
+        return $this->findAllBy(array("company_id" => $company_id), "sales_month");
     }
 }

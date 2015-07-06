@@ -39,7 +39,6 @@ class VizualizerShop_Module_Cart_Add extends Vizualizer_Plugin_Module
         $loader = new Vizualizer_Plugin("shop");
         $cart = $loader->loadModel("Cart");
 
-        Vizualizer_Logger::writeDebug(print_r($post, true));
         if($post["subscription_id"] > 0){
             // subscription_idが渡された場合は、購読を設定
             $cart->clearProducts();
