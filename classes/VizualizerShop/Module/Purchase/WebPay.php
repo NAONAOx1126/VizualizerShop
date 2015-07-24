@@ -52,7 +52,9 @@ class VizualizerShop_Module_Purchase_WebPay extends Vizualizer_Plugin_Module
             if($params->check("point")){
                 $usePoint = $post[$params->get("point")];
             }
-            $result = $cart->purchase("", $usePoint, $params->get("order_status", 0));
+            $cart->setUsePoint($usePoint);
+            $cart->setOrderStatus($params->get("order_status", 0));
+            $result = $cart->purchase("");
             $webpay = new WebPay(Vizualizer_Configure::get(self::WEBPAY_SECRET_KEY));
 
             // 正常に成功した場合、登録するとしていた場合は、カード情報を登録する。
