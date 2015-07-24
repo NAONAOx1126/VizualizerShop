@@ -59,18 +59,29 @@ class VizualizerShop_Model_Content extends VizualizerShop_Model_MallModel
      */
     public function __construct($values = array())
     {
-        // コンテンツ用データを展開
-        $this->contents = array();
-        $loader = new Vizualizer_Plugin("shop");
-        $contentData = $loader->loadModel("ContentData");
-        $post = Vizualizer::request();
-        if ($post["company_id"] > 0) {
-            $contentData->setDomainShopId($post["company_id"]);
+        if ($this->isLimitedCompany() && $this->limitCompanyId() > 0) {
+            $contents = Vizualizer_Cache_Factory::create("shop_content_" . $this->limitCompanyId());
+        }else{
+            $contents = Vizualizer_Cache_Factory::create("shop_content");
         }
-        $contentDatas = $contentData->findAllBy(array());
-        foreach($contentDatas as $contentData){
-            $this->contents[$contentData->content_key] = $contentData;
+        $data = $contents->export();
+        if (empty($data)) {
+            // コンテンツ用データを展開
+            $this->contents = array();
+            $loader = new Vizualizer_Plugin("shop");
+            $contentData = $loader->loadModel("ContentData");
+            $post = Vizualizer::request();
+            if ($post["company_id"] > 0) {
+                $contentData->setDomainShopId($post["company_id"]);
+            }
+            $contentDatas = $contentData->findAllBy(array());
+            foreach($contentDatas as $contentData){
+                $this->contents[$contentData->content_key] = $contentData;
+            }
+            $contents->set("contents", $this->contents);
+            $data = $contents->export();
         }
+        $this->contents = $data["contents"];
     }
 
     /**

@@ -33,6 +33,25 @@ class VizualizerShop_Module_Recipe_List extends Vizualizer_Plugin_Module_List
 
     function execute($params)
     {
-        $this->executeImpl($params, "Shop", "Recipe", $params->get("result", "recipes"));
+        $loader = new Vizualizer_Plugin("shop");
+        $recipe = $loader->loadModel("Recipe");
+        if ($recipe->isLimitedCompany() && $recipe->limitCompanyId() > 0) {
+            $contents = Vizualizer_Cache_Factory::create("shop_recipe_" . $recipe->limitCompanyId());
+        }else{
+            $contents = Vizualizer_Cache_Factory::create("shop_recipe");
+        }
+        $data = $contents->export();
+        if (empty($data)) {
+            $this->executeImpl($params, "Shop", "Recipe", $params->get("result", "recipes"));
+            $attr = Vizualizer::attr();
+            $data = array();
+            foreach ($attr[$params->get("result", "recipes")] as $recipe) {
+                $data[] = $recipe;
+            }
+            $contents->set("data", $data);
+            $data = $contents->export();
+        }
+        $attr = Vizualizer::attr();
+        $attr[$params->get("result", "recipes")] = $data["data"];
     }
 }

@@ -23,16 +23,23 @@
  */
 
 /**
- * 顧客のリストをページング付きで取得する。
+ * 定期購読契約のリストをページング付きで取得する。
  *
  * @package VizualizerShop
  * @author Naohisa Minagawa <info@vizualizer.jp>
  */
-class VizualizerShop_Module_Customer_Page extends Vizualizer_Plugin_Module_Page
+class VizualizerShop_Module_CustomerSubscription_Page extends Vizualizer_Plugin_Module_Page
 {
 
     function execute($params)
     {
-        $this->executeImpl($params, "Shop", "Customer", $params->get("result", "customers"));
+        if ($params->get("customer_only", "0") === "1") {
+            $post = Vizualizer::request();
+            $attr = Vizualizer::attr();
+            $search = $post["search"];
+            $search["customer_id"] = $attr[VizualizerMember::KEY];
+            $post->set("search", $search);
+        }
+        $this->executeImpl($params, "Shop", "CustomerSubscription", $params->get("result", "customerSubscriptions"));
     }
 }

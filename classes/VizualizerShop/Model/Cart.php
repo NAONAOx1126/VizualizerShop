@@ -430,6 +430,34 @@ class VizualizerShop_Model_Cart extends VizualizerShop_Model_MallModel
     }
 
     /**
+     * 利用ポイントを設定
+     */
+    public function setUsePoint($usePoint){
+        $this->usePoint = $usePoint;
+    }
+
+    /**
+     * 利用ポイントを取得
+     */
+    public function getUsePoint(){
+        return $this->usePoint;
+    }
+
+    /**
+     * 注文ステータスを設定
+     */
+    public function setOrderStatus($orderStatus){
+        $this->orderStatus = $orderStatus;
+    }
+
+    /**
+     * 注文ステータスを取得
+     */
+    public function getOrderStatus(){
+        return $this->orderStatus;
+    }
+
+    /**
      * 商品購入合計金額を取得
      */
     public function getSubTotal(){
@@ -482,7 +510,7 @@ class VizualizerShop_Model_Cart extends VizualizerShop_Model_MallModel
     /**
      * 購入完了処理を行う。
      */
-    public function purchase($order_code = "", $point = 0, $order_status = 0){
+    public function purchase($order_code = "", $sendmail = true){
         $loader = new Vizualizer_Plugin("shop");
         // 購読を購入する場合は強制的に購入時に会員登録が必要となる。
         if($this->subscription){
@@ -529,7 +557,7 @@ class VizualizerShop_Model_Cart extends VizualizerShop_Model_MallModel
             $subscription->description = $this->description;
             $subscription->save();
 
-            if(Vizualizer_Configure::exists("ordermail_title") && Vizualizer_Configure::exists("ordermail_template")){
+            if($sendmail && Vizualizer_Configure::exists("ordermail_title") && Vizualizer_Configure::exists("ordermail_template")){
                 // メールの内容を作成
                 $title = Vizualizer_Configure::get("ordermail_title");
                 $templateName = Vizualizer_Configure::get("ordermail_template");
@@ -595,7 +623,7 @@ class VizualizerShop_Model_Cart extends VizualizerShop_Model_MallModel
             $order->order_tel2 = $this->customer->tel2;
             $order->order_tel3 = $this->customer->tel3;
             $order->order_email = $this->customer->email;
-            $order->order_status = $order_status;
+            $order->order_status = $this->orderStatus;
             $order->order_time = Vizualizer::now()->date("Y-m-d H:i:s");
             $order->payment_id = $this->payment->payment_id;
             $order->payment_name = $this->payment->payment_name;
@@ -616,7 +644,7 @@ class VizualizerShop_Model_Cart extends VizualizerShop_Model_MallModel
             $order->discount = $this->getDiscount();
             $order->adjustment = $this->getAdjustment();
             $order->total = $order->subtotal + $order->charge + $order->ship_fee - $order->discount + $order->adjustment;
-            $order->use_point = $point;
+            $order->use_point = $this->usePoint;
             $order->payment_total = $order->total - $order->use_point;
             $order->description = $this->description;
             $order->save();
@@ -666,7 +694,7 @@ class VizualizerShop_Model_Cart extends VizualizerShop_Model_MallModel
                 $detail->save();
             }
 
-            if(Vizualizer_Configure::exists("ordermail_title") && Vizualizer_Configure::exists("ordermail_template")){
+            if($sendmail && Vizualizer_Configure::exists("ordermail_title") && Vizualizer_Configure::exists("ordermail_template")){
                 // メールの内容を作成
                 $title = Vizualizer_Configure::get("ordermail_title");
                 $templateName = Vizualizer_Configure::get("ordermail_template");

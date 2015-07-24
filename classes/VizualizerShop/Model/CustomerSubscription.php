@@ -34,6 +34,10 @@ class VizualizerShop_Model_CustomerSubscription extends Vizualizer_Plugin_Model
 
     const STATUS_ACTIVE = 1;
 
+    const STATUS_SUSPENDED = 2;
+
+    const STATUS_CANCEL = 3;
+
     /**
      * コンストラクタ
      *
@@ -63,6 +67,17 @@ class VizualizerShop_Model_CustomerSubscription extends Vizualizer_Plugin_Model
         $loader = new Vizualizer_Plugin("shop");
         $model = $loader->loadModel("Subscription");
         $model->findByPrimaryKey($this->subscription_id);
+        return $model;
+    }
+
+    /**
+     * 顧客配送先を取得する。
+     */
+    public function customerShip()
+    {
+        $loader = new Vizualizer_Plugin("shop");
+        $model = $loader->loadModel("CustomerShip");
+        $model->findByPrimaryKey($this->customer_ship_id);
         return $model;
     }
 
@@ -114,6 +129,6 @@ class VizualizerShop_Model_CustomerSubscription extends Vizualizer_Plugin_Model
         Vizualizer_Data_Calendar::reset();
 
         // 購入を確定
-        $cart->purchase($order_code);
+        $cart->purchase($order_code, false);
     }
 }

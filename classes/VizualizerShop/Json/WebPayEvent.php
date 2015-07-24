@@ -45,6 +45,52 @@ class VizualizerShop_Json_WebPayEvent
                 $customerSubscription->purchase(strtotime("+21 day"));
             }
 
+            Vizualizer_Logger::writeDebug("Subscription to order complete.");
+
+            if(Vizualizer_Configure::exists("subscription_mail_title") && Vizualizer_Configure::exists("subscription_mail_template")){
+                Vizualizer_Logger::writeDebug("Ready for subscription payment succeeded mail.");
+
+                // メールの内容を作成
+                $title = Vizualizer_Configure::get("subscription_mail_title");
+                $templateName = Vizualizer_Configure::get("subscription_mail_template");
+                $attr = Vizualizer::attr();
+                $template = $attr["template"];
+                if(!empty($template)){
+                    $body = $template->fetch($templateName.".txt");
+
+                    // ショップの情報を取得
+                    $loader = new Vizualizer_Plugin("admin");
+                    $company = $loader->loadModel("Company");
+                    $subscription = $customerSubscription->subscription();
+                    if($subscription->isLimitedCompany() && $subscription->limitCompanyId() > 0){
+                        $company->findByPrimaryKey($subscription->limitCompanyId());
+                    }else{
+                        $company->findBy(array());
+                    }
+
+                    // ショップの情報を取得
+                    $loader = new Vizualizer_Plugin("member");
+                    $customer = $loader->loadModel("Customer");
+                    $customer->findByPrimaryKey($customerSubscription->customerShip()->customer_id);
+
+                    // 購入者にメール送信
+                    $mail = new Vizualizer_Sendmail();
+                    $mail->setFrom($company->email);
+                    $mail->setTo($customer->email);
+                    $mail->setSubject($title);
+                    $mail->addBody($body);
+                    $mail->send();
+
+                    // ショップにメール送信
+                    $mail = new Vizualizer_Sendmail();
+                    $mail->setFrom($customer->email);
+                    $mail->setTo($company->email);
+                    $mail->setSubject($title);
+                    $mail->addBody($body);
+                    $mail->send();
+                }
+            }
+
             // エラーが無かった場合、処理をコミットする。
             Vizualizer_Database_Factory::commit($connection);
         } catch (Exception $e) {
