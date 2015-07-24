@@ -33,6 +33,13 @@ class VizualizerShop_Module_Order_List extends Vizualizer_Plugin_Module_List
 
     function execute($params)
     {
+        if ($params->get("customer_only", "0") === "1") {
+            $post = Vizualizer::request();
+            $attr = Vizualizer::attr();
+            $search = $post["search"];
+            $search["customer_id"] = $attr[VizualizerMember::KEY];
+            $post->set("search", $search);
+        }
         $this->executeImpl($params, "Shop", "Order", $params->get("result", "orders"));
     }
 }

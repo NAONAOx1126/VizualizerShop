@@ -23,16 +23,16 @@
  */
 
 /**
- * 顧客のデータを削除する。
+ * 定期購読契約のデータを保存する。
  *
  * @package VizualizerShop
  * @author Naohisa Minagawa <info@vizualizer.jp>
  */
-class VizualizerShop_Module_Customer_Delete extends Vizualizer_Plugin_Module_Delete
+class VizualizerShop_Module_CustomerSubscription_Save extends Vizualizer_Plugin_Module_Save
 {
 
     function execute($params)
     {
-        $this->executeImpl("Shop", "Customer", "customer_id");
+        $this->executeImpl("Shop", "CustomerSubscription", "customer_subscription_id");
     }
 }

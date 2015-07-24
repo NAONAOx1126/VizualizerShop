@@ -23,16 +23,23 @@
  */
 
 /**
- * 顧客のデータを保存する。
+ * 定期購読契約のリストを取得する。
  *
  * @package VizualizerShop
  * @author Naohisa Minagawa <info@vizualizer.jp>
  */
-class VizualizerShop_Module_Customer_Save extends Vizualizer_Plugin_Module_Save
+class VizualizerShop_Module_CustomerSubscription_List extends Vizualizer_Plugin_Module_List
 {
 
     function execute($params)
     {
-        $this->executeImpl("Shop", "Customer", "customer_id");
+        if ($params->get("customer_only", "0") === "1") {
+            $post = Vizualizer::request();
+            $attr = Vizualizer::attr();
+            $search = $post["search"];
+            $search["customer_id"] = $attr[VizualizerMember::KEY];
+            $post->set("search", $search);
+        }
+        $this->executeImpl($params, "Shop", "CustomerSubscription", $params->get("result", "customerSubscriptions"));
     }
 }

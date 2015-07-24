@@ -23,16 +23,17 @@
  */
 
 /**
- * 顧客のリストを取得する。
+ * 定期購読契約の詳細データを取得する。
  *
  * @package VizualizerShop
  * @author Naohisa Minagawa <info@vizualizer.jp>
  */
-class VizualizerShop_Module_Customer_List extends Vizualizer_Plugin_Module_List
+class VizualizerShop_Module_CustomerSubscription_Detail extends Vizualizer_Plugin_Module_Detail
 {
 
     function execute($params)
     {
-        $this->executeImpl($params, "Shop", "Customer", $params->get("result", "customers"));
+        $post = Vizualizer::request();
+        $this->executeImpl("Shop", "CustomerSubscription", $post["customer_subscription_id"], $params->get("result", "customerSubscription"));
     }
 }
