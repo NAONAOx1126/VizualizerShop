@@ -33,6 +33,25 @@ class VizualizerShop_Module_Faq_List extends Vizualizer_Plugin_Module_List
 
     function execute($params)
     {
-        $this->executeImpl($params, "Shop", "Faq", $params->get("result", "faqs"));
+        $loader = new Vizualizer_Plugin("shop");
+        $faq = $loader->loadModel("Faq");
+        if ($faq->isLimitedCompany() && $faq->limitCompanyId() > 0) {
+            $contents = Vizualizer_Cache_Factory::create("shop_faq_" . $faq->limitCompanyId());
+        }else{
+            $contents = Vizualizer_Cache_Factory::create("shop_faq");
+        }
+        $data = $contents->export();
+        if (empty($data)) {
+            $this->executeImpl($params, "Shop", "Faq", $params->get("result", "faqs"));
+            $attr = Vizualizer::attr();
+            $data = array();
+            foreach ($attr[$params->get("result", "faqs")] as $faq) {
+                $data[] = $faq;
+            }
+            $contents->set("data", $data);
+            $data = $contents->export();
+        }
+        $attr = Vizualizer::attr();
+        $attr[$params->get("result", "faqs")] = $data["data"];
     }
 }
