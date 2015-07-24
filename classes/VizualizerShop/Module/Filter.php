@@ -37,7 +37,7 @@ class VizualizerShop_Module_Filter extends Vizualizer_Plugin_Module
         $loader = new Vizualizer_Plugin("shop");
         $model = $loader->loadModel("Content");
 
-        if($model->isLimitedCompany() && $model->limitCompanyId() == 0){
+        if($model->isLimitedCompany() && $model->getDomainShopId() == 0){
             if ($params->check("error")) {
                 throw new Vizualizer_Exception_Invalid("page", "ページが見つかりません。");
             } else {

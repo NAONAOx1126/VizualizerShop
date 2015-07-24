@@ -55,7 +55,7 @@ class VizualizerShop_Model_MallModel extends Vizualizer_Plugin_Model
     /**
      * アクセスしたドメインからショップコードを取得する。
      */
-    private function getDomainShopId()
+    public function getDomainShopId()
     {
         if(!self::$domainShopId){
             $shopCode = preg_replace("/\\.".preg_quote(Vizualizer_Configure::get("shop_mall_domain"))."$/", "", $_SERVER["SERVER_NAME"]);

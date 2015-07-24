@@ -51,7 +51,9 @@ class VizualizerShop_Module_Purchase_Purchase extends Vizualizer_Plugin_Module
                 if($params->check("point")){
                     $usePoint = $post[$params->get("point")];
                 }
-                $result = $cart->purchase("", $usePoint, $params->get("order_status", 0));
+                $cart->setUsePoint($usePoint);
+                $cart->setOrderStatus($params->get("order_status", 0));
+                $result = $cart->purchase("");
 
                 // エラーが無かった場合、処理をコミットする。
                 Vizualizer_Database_Factory::commit($connection);
