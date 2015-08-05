@@ -37,7 +37,7 @@ class VizualizerShop_Module_Order_List extends Vizualizer_Plugin_Module_List
             $post = Vizualizer::request();
             $attr = Vizualizer::attr();
             $search = $post["search"];
-            $search["customer_id"] = $attr[VizualizerMember::KEY];
+            $search["customer_id"] = $attr[VizualizerMember::KEY]->customer_id;
             $post->set("search", $search);
         }
         $this->executeImpl($params, "Shop", "Order", $params->get("result", "orders"));
