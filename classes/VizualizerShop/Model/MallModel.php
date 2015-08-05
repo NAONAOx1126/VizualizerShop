@@ -159,12 +159,12 @@ class VizualizerShop_Model_MallModel extends Vizualizer_Plugin_Model
     /**
      * レコードを特定のキーで検索する。
      */
-    public function findAllBy($values = array(), $order = "", $reverse = false, $forceOperator = false)
+    public function findAllBy($values = array(), $order = "", $reverse = false)
     {
         if ($this->isLimitedCompany() && $this->limitCompanyId() > 0) {
             $values["company_id"] = $this->limitCompanyId();
         }
-        return parent::findAllBy($values, $order, $reverse, $forceOperator);
+        return parent::findAllBy($values, $order, $reverse);
     }
 
     /**
