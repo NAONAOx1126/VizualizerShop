@@ -37,7 +37,7 @@ class VizualizerShop_Module_CustomerSubscription_List extends Vizualizer_Plugin_
             $post = Vizualizer::request();
             $attr = Vizualizer::attr();
             $search = $post["search"];
-            $search["customer_id"] = $attr[VizualizerMember::KEY];
+            $search["customer_id"] = $attr[VizualizerMember::KEY]->customer_id;
             $post->set("search", $search);
         }
         $this->executeImpl($params, "Shop", "CustomerSubscription", $params->get("result", "customerSubscriptions"));
