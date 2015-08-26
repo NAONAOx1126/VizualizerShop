@@ -195,12 +195,12 @@ class VizualizerShop_Model_MallModel extends Vizualizer_Plugin_Model
      * また、モデル内のカラムがDBに無い場合はスキップする。
      * データ作成日／更新日は自動的に設定される。
      */
-    public function save($ignoreOperator = false)
+    public function save()
     {
         if ($this->isLimitedCompany() && $this->limitCompanyId() > 0) {
             $this->company_id = $this->limitCompanyId();
         }
-        return parent::save($ignoreOperator);
+        return parent::save();
     }
 
     /**
