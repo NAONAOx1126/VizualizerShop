@@ -648,6 +648,11 @@ class VizualizerShop_Model_Cart extends VizualizerShop_Model_MallModel
             $order->payment_total = $order->total - $order->use_point;
             $order->description = $this->description;
             $order->save();
+            // 注文コード未設定の場合はデフォルトで注文IDを設定
+            if (empty($order->order_code)) {
+                $order->order_code = $order->order_id;
+                $order->update();
+            }
 
             // 配送先情報から配送情報を登録
             $orderShip = $loader->loadModel("OrderShip");
