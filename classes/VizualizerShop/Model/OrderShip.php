@@ -74,7 +74,7 @@ class VizualizerShop_Model_OrderShip extends Vizualizer_Plugin_Model
     /**
      * データを登録する。
      */
-    public function save($ignoreOperator = false)
+    public function save()
     {
         $shipped = false;
         if (array_key_exists("shipment_status", $this->values_org) && array_key_exists("shipment_status", $this->values)) {
@@ -82,7 +82,7 @@ class VizualizerShop_Model_OrderShip extends Vizualizer_Plugin_Model
                 $shipped = true;
             }
         }
-        parent::save($ignoreOperator);
+        parent::save();
         if($shipped && Vizualizer_Configure::exists("shipped_mail_title") && Vizualizer_Configure::exists("shipped_mail_template")){
             // メールの内容を作成
             $title = Vizualizer_Configure::get("shipped_mail_title");
