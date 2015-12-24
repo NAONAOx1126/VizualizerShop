@@ -73,6 +73,17 @@ class VizualizerShop_Model_CustomerSubscription extends Vizualizer_Plugin_Model
     /**
      * 顧客配送先を取得する。
      */
+    public function customer()
+    {
+        $loader = new Vizualizer_Plugin("member");
+        $model = $loader->loadModel("Customer");
+        $model->findByPrimaryKey($this->customer_id);
+        return $model;
+    }
+
+    /**
+     * 顧客配送先を取得する。
+     */
     public function customerShip()
     {
         $loader = new Vizualizer_Plugin("shop");
