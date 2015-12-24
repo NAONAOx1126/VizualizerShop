@@ -33,16 +33,27 @@ class VizualizerShop_Module_Content_Save extends Vizualizer_Plugin_Module
 
     function execute($params)
     {
-        // ショップコンテンツを取得する。
-        $loader = new Vizualizer_Plugin("shop");
-        $model = $loader->loadModel("Content");
-
-        // 入力したパラメータのうち、キーが指定の文字列で始まるものをコンテンツデータとして登録する。
         $post = Vizualizer::request();
-        foreach($post as $key => $value){
-            if(preg_match("/^".preg_quote($params->get("prefix", "@"), "/")."(.+)$/", $key, $p) > 0){
-                $name = $p[1];
-                $model->$name = $value;
+        if ($post["add"] || $post["save"]) {
+            // ショップコンテンツを取得する。
+            $loader = new Vizualizer_Plugin("shop");
+            $model = $loader->loadModel("Content");
+
+            // 入力したパラメータのうち、キーが指定の文字列で始まるものをコンテンツデータとして登録する。
+            $post = Vizualizer::request();
+            foreach($post as $key => $value){
+                if(preg_match("/^".preg_quote($params->get("prefix", "@"), "/")."(.+)$/", $key, $p) > 0){
+                    $name = $p[1];
+                    $model->$name = $value;
+                }
+            }
+            // 画面をリロードする。
+            if (!$this->continue) {
+                // 登録に使用したキーを無効化
+                $this->removeInput("add");
+                $this->removeInput("save");
+
+                $this->reload();
             }
         }
     }

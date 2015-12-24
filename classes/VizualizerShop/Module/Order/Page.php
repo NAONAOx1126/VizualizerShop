@@ -33,13 +33,35 @@ class VizualizerShop_Module_Order_Page extends Vizualizer_Plugin_Module_Page
 
     function execute($params)
     {
+        $post = Vizualizer::request();
+        $attr = Vizualizer::attr();
         if ($params->get("customer_only", "0") === "1") {
-            $post = Vizualizer::request();
-            $attr = Vizualizer::attr();
             $search = $post["search"];
             $search["customer_id"] = $attr[VizualizerMember::KEY]->customer_id;
             $post->set("search", $search);
         }
-        $this->executeImpl($params, "Shop", "Order", $params->get("result", "orders"));
+        if (is_array($post["search"]) && array_key_exists("order_type", $post["search"]) && ($post["search"]["order_type"] == "1" || $post["search"]["order_type"] == "2")) {
+            $productOptionIds = array();
+            $loader = new Vizualizer_Plugin("shop");
+            $subscription = $loader->loadModel("Subscription");
+            $subscriptions = $subscription->findAllBy();
+            foreach ($subscriptions as $subscription) {
+                $productOptionIds[] = $subscription->product_option_id;
+            }
+            if ($post["search"]["order_type"] == "1") {
+                $search = $post["search"];
+                unset($search["nin:product_option_id"]);
+                $search["in:product_option_id"] = $productOptionIds;
+                $post->set("search", $search);
+            }
+            if ($post["search"]["order_type"] == "2") {
+                $search = $post["search"];
+                unset($search["in:product_option_id"]);
+                $search["nin:product_option_id"] = $productOptionIds;
+                $post->set("search", $search);
+            }
+        }
+        $this->setGroupBy("order_id");
+        $this->executeImpl($params, "Shop", "OrderView", $params->get("result", "orders"));
     }
 }
