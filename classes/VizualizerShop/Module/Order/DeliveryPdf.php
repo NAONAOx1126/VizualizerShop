@@ -87,7 +87,7 @@ class VizualizerShop_Module_Order_DeliveryPdf extends Vizualizer_Plugin_Module_P
                 $this->text(595 - 567, 265, 11, "決済方法：".$order->payment_name);
                 // ショップのロゴを出力
                 if (!empty($content->roaster_logo)) {
-                    $this->image(595 - 201, 100, VIZUALIZER_SITE_ROOT."/upload/".$content->roaster_logo);
+                    $this->image(595 - 201, 80, VIZUALIZER_SITE_ROOT."/upload/".$content->roaster_logo, 0, 60);
                 }
                 // ショップの情報を出力
                 $this->setFont($lightFont);
