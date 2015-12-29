@@ -30,11 +30,24 @@
  */
 class VizualizerShop_Module_Order_Download extends Vizualizer_Plugin_Module_Download
 {
+    private $orderStatuses;
+    private $shipmentStatuses;
+    private $paymentStatuses;
 
     function execute($params)
     {
         $post = Vizualizer::request();
         $result = array();
+        $this->orderStatuses = array("仮注文", "注文済み", "入荷待ち", "保留", "顧客問い合わせ中", "処理完了");
+        $this->paymentStatuses = array("未決済", "決済失敗", "決済完了");
+        $this->shipmentStatuses = array("発送待ち", "発送保留", "発送済み", "返送／再発送待ち");
         $this->executeImpl($params, "Shop", "OrderView", $result);
+    }
+
+    protected function filterData($data){
+        $data->order_status_name = $this->orderStatuses[$data->order_status];
+        $data->payment_status_name = $this->paymentStatuses[$data->payment_status];
+        $data->shipment_status_name = $this->shipmentStatuses[$data->shipment_status];
+        return $data;
     }
 }
