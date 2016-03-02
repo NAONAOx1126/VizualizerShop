@@ -29,20 +29,26 @@ class VizualizerShop_Json_WebPayEvent
         $connection = Vizualizer_Database_Factory::begin("shop");
 
         try {
+            // 注文日を計算で取得する。
+            $orderDay1 = $this->calcOrderDay($subscription->order_margin, $subscription->week1, $subscription->weekday1);
+            $orderDay2 = $this->calcOrderDay($subscription->order_margin, $subscription->week2, $subscription->weekday2);
+            $orderDay3 = $this->calcOrderDay($subscription->order_margin, $subscription->week3, $subscription->weekday3);
+            $orderDay4 = $this->calcOrderDay($subscription->order_margin, $subscription->week4, $subscription->weekday4);
+
             // 課金した日を注文日として、注文を作成
-            $customerSubscription->purchase();
+            $customerSubscription->purchase($orderDay1);
 
             if($subscription->orders >= 2){
                 // 14日後を注文日として注文を作成
-                $customerSubscription->purchase(strtotime("+14 day"));
+                $customerSubscription->purchase($orderDay2);
             }
 
             if($subscription->orders >= 4){
                 // 7日後を注文日として注文を作成
-                $customerSubscription->purchase(strtotime("+7 day"));
+                $customerSubscription->purchase($orderDay3);
 
                 // 21日後を注文日として注文を作成
-                $customerSubscription->purchase(strtotime("+21 day"));
+                $customerSubscription->purchase($orderDay4);
             }
 
             Vizualizer_Logger::writeDebug("Subscription to order complete.");
@@ -102,6 +108,30 @@ class VizualizerShop_Json_WebPayEvent
         // 処理の現在時刻を元に戻してカレンダーをリセット
         Vizualizer_Configure::set("SYSTEM_CURRENT_TIME", null);
         Vizualizer_Data_Calendar::reset();
+    }
+
+    private function calcOrderDay($order_margin, $week, $weekday) {
+        // 課金した日から発送日の開始日を設定。
+        $startSubscription = strtotime("+" . $order_margin . " day");
+
+        // 最初の発送日から指定に合う日をピックアップする。
+        $firstThisMonth = strtotime(date("Y-m-01"));
+        $firstNextMonth = strtotime(date("Y-m-01", strtotime("+1 month")));
+        $delivDayMod = $weekday - date("w", $firstThisMonth);
+        if ($delivDayMod < 0) {
+            $delivDayMod += 7;
+        }
+        $delivDay = ($week - 1) * 7 + $delivDayMod;
+
+        if ($delivDay < date("d", $startSubscription)) {
+            $delivDayMod = $weekday - date("w", $firstNextMonth);
+            if ($delivDayMod < 0) {
+                $delivDayMod += 7;
+            }
+            $delivDay = ($week - 1) * 7 + $delivDayMod;
+            return $firstNextMonth + ($delivDay - $order_margin) * 24 * 3600;
+        }
+        return $firstThisMonth + ($delivDay - $order_margin) * 24 * 3600;
     }
 
     /**

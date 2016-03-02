@@ -23,26 +23,26 @@
  */
 
 /**
- * 売上のリストを取得する。
+ * 発送日が重複するものがあるかどうかのチェックを行う。
  *
- * @package VizualizerShop
+ * @package Vizualizer
  * @author Naohisa Minagawa <info@vizualizer.jp>
  */
-class VizualizerShop_Module_Sales extends Vizualizer_Plugin_Module_List
+class VizualizerShop_Module_Subscription_Check_Duplicate extends Vizualizer_Plugin_Module
 {
 
+    /**
+     * モジュールのエンドポイント
+     */
     function execute($params)
     {
-        // ショップコンテンツを取得する。
-        $this->executeImpl($params, "Shop", "OrderView", "orders");
-        $loader = new Vizualizer_Plugin("shop");
-        $model = $loader->loadModel("Order");
-        $list = $model->findAllBy(array(), "sales_month");
-        $sales = array();
-        foreach($list as $data){
-            $sales[$data->company_id][$data->sales_month] = $data;
+        $post = Vizualizer::request();
+        for ($target = 1; $target <= $post["orders"]; $target ++) {
+            for ($i = 1; $i < $target; $i ++) {
+                if ($post["week".$target] == $post["week".$i] && $post["weekday".$target] == $post["weekday".$i]) {
+                    throw new Vizualizer_Exception_Invalid("week".$target, $params->get("value") . "：" . $target . $params->get("suffix", "番目の日付が重複しています。"));
+                }
+            }
         }
-        $attr = Vizualizer::attr();
-        $attr["sales"] = $sales;
     }
 }
