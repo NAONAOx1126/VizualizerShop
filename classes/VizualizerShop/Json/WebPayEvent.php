@@ -53,16 +53,16 @@ class VizualizerShop_Json_WebPayEvent
 
             Vizualizer_Logger::writeDebug("Subscription to order complete.");
 
-            if(Vizualizer_Configure::exists("subscription_mail_title") && Vizualizer_Configure::exists("subscription_mail_template")){
+            $mailTemplates = Vizualizer_Configure::get("mail_templates");
+            if(is_array($mailTemplates) && array_key_exists("subscription", $mailTemplates) && is_array($mailTemplates["subscription"])){
                 Vizualizer_Logger::writeDebug("Ready for subscription payment succeeded mail.");
 
                 // メールの内容を作成
-                $title = Vizualizer_Configure::get("subscription_mail_title");
-                $templateName = Vizualizer_Configure::get("subscription_mail_template");
+                $title = $mailTemplates["subscription"]["title"];
+                $templateName = $mailTemplates["subscription"]["template"];
                 $attr = Vizualizer::attr();
                 $template = $attr["template"];
                 if(!empty($template)){
-                    $body = $template->fetch($templateName.".txt");
 
                     // ショップの情報を取得
                     $loader = new Vizualizer_Plugin("admin");
@@ -78,6 +78,15 @@ class VizualizerShop_Json_WebPayEvent
                     $loader = new Vizualizer_Plugin("member");
                     $customer = $loader->loadModel("Customer");
                     $customer->findByPrimaryKey($customerSubscription->customerShip()->customer_id);
+
+                    $attr["order_id"] = $subscription->subscription_id;
+                    $attr["order_time"] = $subscription->subscription_time;
+                    $attr["order_details"] = array(array("product_name" => $subscription->subscription()->productOption()->getProductName(), "price" => $subscription->subscription()->price, "quantity" => "1"));
+                    $attr["next_delivery"] = $subscription->subscription()->getNextDelivery();
+                    $attr["subtotal"] = $subscription->getSubtotal();
+                    $attr["charge"] = $subscription->getCharge();
+                    $attr["ship_fee"] = $subscription->getShipFee() * $subscription->subscription()->orders;
+                    $body = $template->fetch($templateName.".txt");
 
                     // 購入者にメール送信
                     $mail = new Vizualizer_Sendmail();

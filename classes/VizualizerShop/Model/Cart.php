@@ -207,7 +207,7 @@ class VizualizerShop_Model_Cart extends VizualizerShop_Model_MallModel
         $productExists = false;
         foreach($this->products as $index => $product){
             if($product->product_option_id == $productOption->product_option_id){
-                Vizualizer_Logger::writeInfo("Add Quantity to Product in Cart : ".$productOption->product()->product_name);
+                $this->info("Add Quantity to Product in Cart : ".$productOption->product()->product_name);
                 $this->addQuantity($index, $quantity);
                 $productExists = true;
             }
@@ -224,7 +224,7 @@ class VizualizerShop_Model_Cart extends VizualizerShop_Model_MallModel
             }
             $products[$index] = $productOption;
             $this->products = $products;
-            Vizualizer_Logger::writeInfo("Add Product to Cart : ".$productOption->product()->product_name);
+            $this->info("Add Product to Cart : ".$productOption->product()->product_name);
             $this->setQuantity($index, $quantity);
         }
     }
@@ -515,7 +515,22 @@ class VizualizerShop_Model_Cart extends VizualizerShop_Model_MallModel
      * 配送料を取得
      */
     public function getShipFee(){
-        $shipFee = $this->ship->getShipFee($this->customerShip->ship_pref, $this->customerShip->ship_address1, $this->customerShip->ship_address2);
+        if ($this->subscription) {
+            $shipFee = $this->ship->getShipFee($this->subscription->productOption()->product()->weight, $this->customerShip->ship_pref, $this->customerShip->ship_address1, $this->customerShip->ship_address2);
+        } else {
+            // 商品購入の場合は商品合計金額を返す。
+            $ship_fees = 0;
+            $weight = 0;
+            foreach($this->products as $productOption){
+                $product = $productOption->product();
+                if($product->ship_fee_flg == "1"){
+                    $ship_fees += $product->ship_fee * $productOption->quantity;
+                } else {
+                    $weight += $product->weight;
+                }
+            }
+            $shipFee = $this->ship->getShipFee($weight, $this->customerShip->ship_pref, $this->customerShip->ship_address1, $this->customerShip->ship_address2) + $ship_fees;
+        }
         return $shipFee;
     }
 
@@ -531,6 +546,9 @@ class VizualizerShop_Model_Cart extends VizualizerShop_Model_MallModel
      */
     public function purchase($order_code = "", $sendmail = true){
         $loader = new Vizualizer_Plugin("shop");
+        $post = Vizualizer::request();
+        $attr = Vizualizer::attr();
+
         // 購読を購入する場合は強制的に購入時に会員登録が必要となる。
         if($this->subscription){
             $this->register = true;
@@ -575,13 +593,21 @@ class VizualizerShop_Model_Cart extends VizualizerShop_Model_MallModel
             $subscription->subscription_status = VizualizerShop_Model_CustomerSubscription::STATUS_ACTIVE;
             $subscription->description = $this->description;
             $subscription->save();
+            $attr["order_id"] = $subscription->subscription_id;
+            $attr["order_time"] = $subscription->subscription_time;
+            $attr["order_details"] = array(array("product_name" => $subscription->subscription()->productOption()->getProductName(), "price" => $subscription->subscription()->price, "quantity" => "1"));
+            $attr["next_delivery"] = $subscription->subscription()->getNextDelivery();
+            $attr["subtotal"] = $subscription->getSubtotal();
+            $attr["charge"] = $subscription->getCharge();
+            $attr["ship_fee"] = $subscription->getShipFee() * $subscription->subscription()->orders;
+            $attr["total"] = $attr["subtotal"] + $attr["charge"] + $attr["ship_fee"];
 
-            if($sendmail && Vizualizer_Configure::exists("ordermail_title") && Vizualizer_Configure::exists("ordermail_template")){
+            $mailTemplates = Vizualizer_Configure::get("mail_templates");
+            if($sendmail && is_array($mailTemplates) && array_key_exists("order", $mailTemplates) && is_array($mailTemplates["order"])){
                 // メールの内容を作成
                 $title = Vizualizer_Configure::get("ordermail_title");
                 $templateName = Vizualizer_Configure::get("ordermail_template");
-                $attr = Vizualizer::attr();
-                $template = $attr["template"];
+                $this->logTemplateData();
                 $body = $template->fetch($templateName.".txt");
 
                 // ショップの情報を取得
@@ -615,11 +641,14 @@ class VizualizerShop_Model_Cart extends VizualizerShop_Model_MallModel
             // 商品購入の場合は注文データを作成
             $subtotal = 0;
             $ship_fees = 0;
+            $weight = 0;
             foreach($this->products as $productOption){
                 $product = $productOption->product();
                 $subtotal += $product->sale_price * $productOption->quantity;
                 if($product->ship_fee_flg == "1"){
                     $ship_fees += $product->ship_fee * $productOption->quantity;
+                } else {
+                    $weight += $product->weight;
                 }
             }
 
@@ -659,7 +688,7 @@ class VizualizerShop_Model_Cart extends VizualizerShop_Model_MallModel
             }else{
                 $order->charge = $this->payment->charge1;
             }
-            $order->ship_fee = $this->ship->getShipFee($this->customerShip->pref, $this->customerShip->address1, $this->customerShip->address2) + $ship_fees;
+            $order->ship_fee = $this->ship->getShipFee($weight, $this->customerShip->pref, $this->customerShip->address1, $this->customerShip->address2) + $ship_fees;
             $order->discount = $this->getDiscount();
             $order->adjustment = $this->getAdjustment();
             $order->total = $order->subtotal + $order->charge + $order->ship_fee - $order->discount + $order->adjustment;
@@ -707,6 +736,7 @@ class VizualizerShop_Model_Cart extends VizualizerShop_Model_MallModel
                 $orderShip->save();
 
                 // 購入情報から注文詳細情報を登録
+                $orderDetailData = array();
                 foreach($this->products as $productOption){
                     $product = $productOption->product();
                     $detail = $loader->loadModel("OrderDetail");
@@ -714,17 +744,30 @@ class VizualizerShop_Model_Cart extends VizualizerShop_Model_MallModel
                     $detail->order_ship_id = $orderShip->order_ship_id;
                     $detail->product_option_id = $productOption->product_option_id;
                     $detail->product_code = $product->product_code;
-                    $detail->product_name = $product->product_name;
+                    $detail->product_name = $productOption->getProductName();
                     $detail->price = $product->sale_price;
                     $detail->quantity = $productOption->quantity;
+                    $orderDetailData[] = array("product_name" => $detail->product_name, "price" => $detail->price, "quantity" => $detail->quantity);
                     $detail->save();
                 }
 
-                if($sendmail && Vizualizer_Configure::exists("ordermail_title") && Vizualizer_Configure::exists("ordermail_template")){
+                $attr = Vizualizer::attr();
+                $attr["order_id"] = $order->order_id;
+                $attr["order_time"] = $order->order_time;
+                $attr["order_details"] = $orderDetailData;
+                $subscription = $loader->loadModel("Subscription");
+                $attr["next_delivery"] = $subscription->getNextDelivery();
+                $attr["subtotal"] = $order->subtotal;
+                $attr["charge"] = $order->charge;
+                $attr["ship_fee"] = $order->ship_fee;
+                $attr["total"] = $order->total;
+
+                $mailTemplates = Vizualizer_Configure::get("mail_templates");
+                if($sendmail && is_array($mailTemplates) && array_key_exists("order", $mailTemplates) && is_array($mailTemplates["order"])){
                     // メールの内容を作成
-                    $title = Vizualizer_Configure::get("ordermail_title");
-                    $templateName = Vizualizer_Configure::get("ordermail_template");
-                    $attr = Vizualizer::attr();
+                    $title = $mailTemplates["order"]["title"];
+                    $templateName = $mailTemplates["order"]["template"];
+                    $this->logTemplateData();
                     $template = $attr["template"];
                     if(!empty($template)){
                         $body = $template->fetch($templateName.".txt");

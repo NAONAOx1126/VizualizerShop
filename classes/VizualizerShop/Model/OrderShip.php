@@ -83,36 +83,46 @@ class VizualizerShop_Model_OrderShip extends Vizualizer_Plugin_Model
             }
         }
         parent::save();
-        if($shipped && Vizualizer_Configure::exists("shipped_mail_title") && Vizualizer_Configure::exists("shipped_mail_template")){
+
+        $mailTemplates = Vizualizer_Configure::get("mail_templates");
+        if($sendmail && is_array($mailTemplates) && array_key_exists("ship", $mailTemplates) && is_array($mailTemplates["ship"])){
             // メールの内容を作成
-            $title = Vizualizer_Configure::get("shipped_mail_title");
-            $templateName = Vizualizer_Configure::get("shipped_mail_template");
-            $attr = Vizualizer::attr();
+            $title = $mailTemplates["ship"]["title"];
+            $templateName = $mailTemplates["ship"]["template"];
+            $this->logTemplateData();
             $template = $attr["template"];
             if(!empty($template)){
-                $body = $template->fetch($templateName.".txt");
-
                 // ショップの情報を取得
                 $loader = new Vizualizer_Plugin("admin");
                 $company = $loader->loadModel("Company");
-                $order = $this->order();
-                if($order->isLimitedCompany() && $order->limitCompanyId() > 0){
-                    $company->findByPrimaryKey($order->limitCompanyId());
+                if($this->isLimitedCompany() && $this->limitCompanyId() > 0){
+                    $company->findByPrimaryKey($this->limitCompanyId());
                 }else{
                     $company->findBy(array());
                 }
 
+                $attr["company"] = $company->toArray();
+                $attr["order"] = $this->order()->toArray();
+                $attr["orderShip"] = $this->toArray();
+                $data = $this->orderDetails();
+                $details = array();
+                foreach ($data as $item) {
+                    $details[] = $item->toArray();
+                }
+                $attr["orderDetails"] = $details;
+                $body = $template->fetch($templateName.".txt");
+
                 // 購入者にメール送信
                 $mail = new Vizualizer_Sendmail();
                 $mail->setFrom($company->email);
-                $mail->setTo($order->order_email);
+                $mail->setTo($this->customer->email);
                 $mail->setSubject($title);
                 $mail->addBody($body);
                 $mail->send();
 
                 // ショップにメール送信
                 $mail = new Vizualizer_Sendmail();
-                $mail->setFrom($order->order_email);
+                $mail->setFrom($this->customer->email);
                 $mail->setTo($company->email);
                 $mail->setSubject($title);
                 $mail->addBody($body);

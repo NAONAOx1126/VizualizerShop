@@ -51,4 +51,15 @@ class VizualizerShop_Model_OrderDetail extends Vizualizer_Plugin_Model
     {
         $this->findBy(array("order_detail_id" => $order_detail_id));
     }
+
+    /**
+     * 商品データを取得する。
+     */
+    public function productOption()
+    {
+        $loader = new Vizualizer_Plugin("shop");
+        $model = $loader->loadModel("ProductOption");
+        $model->findByPrimaryKey($this->product_option_id);
+        return $model;
+    }
 }

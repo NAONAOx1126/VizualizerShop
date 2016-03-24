@@ -93,6 +93,28 @@ class VizualizerShop_Model_CustomerSubscription extends Vizualizer_Plugin_Model
     }
 
     /**
+     * 決済方法を取得する。
+     */
+    public function payment()
+    {
+        $loader = new Vizualizer_Plugin("shop");
+        $model = $loader->loadModel("Payment");
+        $model->findByPrimaryKey($this->payment_id);
+        return $model;
+    }
+
+    /**
+     * 配送方法を取得する。
+     */
+    public function ship()
+    {
+        $loader = new Vizualizer_Plugin("shop");
+        $model = $loader->loadModel("Ship");
+        $model->findByPrimaryKey($this->ship_id);
+        return $model;
+    }
+
+    /**
      * 定期購入の情報を元に注文を作成
      */
     public function purchase($orderTime = null, $order_code = ""){
@@ -101,25 +123,16 @@ class VizualizerShop_Model_CustomerSubscription extends Vizualizer_Plugin_Model
         $cart = $loader->loadModel("Cart");
 
         // 顧客情報をカートに設定
-        $memberLoader = new Vizualizer_Plugin("member");
-        $customer = $memberLoader->loadModel("Customer");
-        $customer->findByPrimaryKey($this->customer_id);
-        $cart->setCustomer($customer);
+        $cart->setCustomer($this->customer());
 
         // 配送先情報をカートに設定
-        $customerShip = $loader->loadModel("CustomerShip");
-        $customerShip->findByPrimaryKey($this->customer_ship_id);
-        $cart->setCustomerShip($customerShip);
+        $cart->setCustomerShip($this->customerShip());
 
         // 決済情報をカートに設定
-        $payment = $loader->loadModel("Payment");
-        $payment->findByPrimaryKey($this->payment_id);
-        $cart->setPayment($payment);
+        $cart->setPayment($this->payment());
 
         // 配送情報をカートに設定
-        $ship = $loader->loadModel("Ship");
-        $payment->findByPrimaryKey($this->ship_id);
-        $cart->setShip($ship);
+        $cart->setShip($this->ship());
 
         // カートに商品を追加
         $cart->clearProducts();
@@ -141,5 +154,32 @@ class VizualizerShop_Model_CustomerSubscription extends Vizualizer_Plugin_Model
 
         // 購入を確定
         $cart->purchase($order_code, false);
+    }
+
+    /**
+     * 小計を取得する。
+     */
+    public function getSubtotal()
+    {
+        $product = $this->subscription()->productOption()->product();
+        return $product->price;
+    }
+
+    /**
+     * 決済手数料を取得する。
+     */
+    public function getCharge()
+    {
+        return $this->payment()->getCharge($this->getSubtotal());
+    }
+
+    /**
+     * 配送料を取得する。
+     */
+    public function getShipFee()
+    {
+        $product = $this->subscription()->productOption()->product();
+        $customerShip = $this->customerShip();
+        return $this->ship()->getShipFee($product->weight, $customerShip->pref, $customerShip->address1, $customerShip->address2);
     }
 }
