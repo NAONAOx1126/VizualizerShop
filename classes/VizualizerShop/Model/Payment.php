@@ -61,6 +61,23 @@ class VizualizerShop_Model_Payment extends VizualizerShop_Model_MallModel
         $this->findBy(array("payment_id" => $payment_id));
     }
 
+    public function getCharge($total)
+    {
+        if ($this->charge5_total > 0 && $this->charge5_total < $total) {
+            return $this->charge5;
+        }
+        if ($this->charge4_total > 0 && $this->charge4_total < $total) {
+            return $this->charge4;
+        }
+        if ($this->charge3_total > 0 && $this->charge3_total < $total) {
+            return $this->charge3;
+        }
+        if ($this->charge2_total > 0 && $this->charge2_total < $total) {
+            return $this->charge2;
+        }
+        return $this->charge1;
+    }
+
     /**
      * トークンのリストを取得する。
      */
