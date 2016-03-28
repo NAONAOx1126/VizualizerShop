@@ -608,6 +608,7 @@ class VizualizerShop_Model_Cart extends VizualizerShop_Model_MallModel
                 $title = Vizualizer_Configure::get("ordermail_title");
                 $templateName = Vizualizer_Configure::get("ordermail_template");
                 $this->logTemplateData();
+                $template = $attr["template"];
                 $body = $template->fetch($templateName.".txt");
 
                 // ショップの情報を取得
