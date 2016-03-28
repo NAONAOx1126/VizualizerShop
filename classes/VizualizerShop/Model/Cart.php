@@ -609,32 +609,34 @@ class VizualizerShop_Model_Cart extends VizualizerShop_Model_MallModel
                 $templateName = Vizualizer_Configure::get("ordermail_template");
                 $this->logTemplateData();
                 $template = $attr["template"];
-                $body = $template->fetch($templateName.".txt");
+                if(!empty($template)){
+                    $body = $template->fetch($templateName.".txt");
 
-                // ショップの情報を取得
-                $loader = new Vizualizer_Plugin("admin");
-                $company = $loader->loadModel("Company");
-                if($this->isLimitedCompany() && $this->limitCompanyId() > 0){
-                    $company->findByPrimaryKey($this->limitCompanyId());
-                }else{
-                    $company->findBy(array());
+                    // ショップの情報を取得
+                    $loader = new Vizualizer_Plugin("admin");
+                    $company = $loader->loadModel("Company");
+                    if($this->isLimitedCompany() && $this->limitCompanyId() > 0){
+                        $company->findByPrimaryKey($this->limitCompanyId());
+                    }else{
+                        $company->findBy(array());
+                    }
+
+                    // 購入者にメール送信
+                    $mail = new Vizualizer_Sendmail();
+                    $mail->setFrom($company->email);
+                    $mail->setTo($this->customer->email);
+                    $mail->setSubject($title);
+                    $mail->addBody($body);
+                    $mail->send();
+
+                    // ショップにメール送信
+                    $mail = new Vizualizer_Sendmail();
+                    $mail->setFrom($this->customer->email);
+                    $mail->setTo($company->email);
+                    $mail->setSubject($title);
+                    $mail->addBody($body);
+                    $mail->send();
                 }
-
-                // 購入者にメール送信
-                $mail = new Vizualizer_Sendmail();
-                $mail->setFrom($company->email);
-                $mail->setTo($this->customer->email);
-                $mail->setSubject($title);
-                $mail->addBody($body);
-                $mail->send();
-
-                // ショップにメール送信
-                $mail = new Vizualizer_Sendmail();
-                $mail->setFrom($this->customer->email);
-                $mail->setTo($company->email);
-                $mail->setSubject($title);
-                $mail->addBody($body);
-                $mail->send();
             }
 
             return $subscription;
