@@ -605,8 +605,8 @@ class VizualizerShop_Model_Cart extends VizualizerShop_Model_MallModel
             $mailTemplates = Vizualizer_Configure::get("mail_templates");
             if($sendmail && is_array($mailTemplates) && array_key_exists("order", $mailTemplates) && is_array($mailTemplates["order"])){
                 // メールの内容を作成
-                $title = Vizualizer_Configure::get("ordermail_title");
-                $templateName = Vizualizer_Configure::get("ordermail_template");
+                $title = $mailTemplates["order"]["title"];
+                $templateName = $mailTemplates["order"]["template"];
                 $this->logTemplateData();
                 $template = $attr["template"];
                 if(!empty($template)){
