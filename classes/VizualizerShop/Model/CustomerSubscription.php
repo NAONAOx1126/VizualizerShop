@@ -118,42 +118,44 @@ class VizualizerShop_Model_CustomerSubscription extends Vizualizer_Plugin_Model
      * 定期購入の情報を元に注文を作成
      */
     public function purchase($orderTime = null, $order_code = ""){
-        // カートを生成
-        $loader = new Vizualizer_Plugin("shop");
-        $cart = $loader->loadModel("Cart");
+        if ($this->customer_subscription_id > 0) {
+            // カートを生成
+            $loader = new Vizualizer_Plugin("shop");
+            $cart = $loader->loadModel("Cart");
 
-        // 顧客情報をカートに設定
-        $cart->setCustomer($this->customer());
+            // 顧客情報をカートに設定
+            $cart->setCustomer($this->customer());
 
-        // 配送先情報をカートに設定
-        $cart->setCustomerShip($this->customerShip());
+            // 配送先情報をカートに設定
+            $cart->setCustomerShip($this->customerShip());
 
-        // 決済情報をカートに設定
-        $cart->setPayment($this->payment());
+            // 決済情報をカートに設定
+            $cart->setPayment($this->payment());
 
-        // 配送情報をカートに設定
-        $cart->setShip($this->ship());
+            // 配送情報をカートに設定
+            $cart->setShip($this->ship());
 
-        // カートに商品を追加
-        $cart->clearProducts();
-        $cart->addProductById($this->subscription()->product_option_id);
+            // カートに商品を追加
+            $cart->clearProducts();
+            $cart->addProductById($this->subscription()->product_option_id);
 
-        // 注文日の指定がない場合は現在日時を注文日時に指定
-        if($orderTime == null){
-            $orderTime = time();
-        }else{
-            // 注文の指定があった場合は、2回目以降の配送扱いとなるため、調整額に合計額のマイナスを設定
-            while($cart->getTotal() !== 0){
-                $cart->setAdjustment(- $cart->getTotal());
+            // 注文日の指定がない場合は現在日時を注文日時に指定
+            if($orderTime == null){
+                $orderTime = time();
+            }else{
+                // 注文の指定があった場合は、2回目以降の配送扱いとなるため、調整額に合計額のマイナスを設定
+                while($cart->getTotal() !== 0){
+                    $cart->setAdjustment(- $cart->getTotal());
+                }
             }
+
+            // 注文日時を変更
+            Vizualizer_Configure::set("SYSTEM_CURRENT_TIME", date("Y-m-d H:i:s", $orderTime));
+            Vizualizer_Data_Calendar::reset();
+
+            // 購入を確定
+            $cart->purchase($order_code, false);
         }
-
-        // 注文日時を変更
-        Vizualizer_Configure::set("SYSTEM_CURRENT_TIME", date("Y-m-d H:i:s", $orderTime));
-        Vizualizer_Data_Calendar::reset();
-
-        // 購入を確定
-        $cart->purchase($order_code, false);
     }
 
     /**

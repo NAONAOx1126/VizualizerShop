@@ -115,14 +115,14 @@ class VizualizerShop_Model_OrderShip extends Vizualizer_Plugin_Model
                 // 購入者にメール送信
                 $mail = new Vizualizer_Sendmail();
                 $mail->setFrom($company->email);
-                $mail->setTo($this->customer->email);
+                $mail->setTo($order->order_email);
                 $mail->setSubject($title);
                 $mail->addBody($body);
                 $mail->send();
 
                 // ショップにメール送信
                 $mail = new Vizualizer_Sendmail();
-                $mail->setFrom($this->customer->email);
+                $mail->setFrom($order->order_email);
                 $mail->setTo($company->email);
                 $mail->setSubject($title);
                 $mail->addBody($body);
