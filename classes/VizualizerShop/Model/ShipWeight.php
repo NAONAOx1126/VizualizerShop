@@ -23,14 +23,13 @@
  */
 
 /**
- * 特別配送のモデルです。
+ * 重量別配送のモデルです。
  *
  * @package VizualizerShop
  * @author Naohisa Minagawa <info@vizualizer.jp>
  */
-class VizualizerShop_Model_SpecialShip extends Vizualizer_Plugin_Model
+class VizualizerShop_Model_ShipWeight extends VizualizerShop_Model_MallModel
 {
-
     /**
      * コンストラクタ
      *
@@ -39,35 +38,26 @@ class VizualizerShop_Model_SpecialShip extends Vizualizer_Plugin_Model
     public function __construct($values = array())
     {
         $loader = new Vizualizer_Plugin("shop");
-        parent::__construct($loader->loadTable("SpecialShips"), $values);
+        parent::__construct($loader->loadTable("ShipWeights"), $values);
     }
 
     /**
      * 主キーでデータを取得する。
      *
-     * @param $special_ship_id 特別配送ID
+     * @param $ship_weight_id 重量配送ID
      */
-    public function findByPrimaryKey($special_ship_id)
+    public function findByPrimaryKey($ship_weight_id)
     {
-        $this->findBy(array("special_ship_id" => $special_ship_id));
+        $this->findBy(array("ship_weight_id" => $ship_weight_id));
     }
 
     /**
-     * 配送IDでデータを取得する。
+     * 商品オプションのデータを取得する。
      */
-    public function findAllByShipId($ship_id)
-    {
-        return $this->findAllBy(array("ship_id" => $ship_id), "LENGTH(".$this->access->address_prefix.")", true);
-    }
-
-    /**
-     * 配送方法データを取得する。
-     */
-    public function ship()
+    public function addressShip($address)
     {
         $loader = new Vizualizer_Plugin("shop");
-        $model = $loader->loadModel("Ship");
-        $model->findByPrimaryKey($this->ship_id);
-        return $model;
+        $model = $loader->loadModel("ShipAddress");
+        return $model->findAllBy(array("ship_weight_id" => $this->ship_weight_id, "inpre:address_prefix" => $address), "LENGTH(address_prefix)", true);
     }
 }

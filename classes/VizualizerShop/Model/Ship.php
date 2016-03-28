@@ -64,11 +64,11 @@ class VizualizerShop_Model_Ship extends VizualizerShop_Model_MallModel
     /**
      * 商品オプションのデータを取得する。
      */
-    public function specialShips()
+    public function weightShips()
     {
         $loader = new Vizualizer_Plugin("shop");
-        $model = $loader->loadModel("SpecialShip");
-        return $model->findAllByShipId($this->ship_id);
+        $model = $loader->loadModel("ShipWeight");
+        return $model->findAllBy(array("ship_id" => $this->ship_id));
     }
 
     /**
@@ -78,20 +78,41 @@ class VizualizerShop_Model_Ship extends VizualizerShop_Model_MallModel
     {
         $loader = new Vizualizer_Plugin("shop");
         $model = $loader->loadModel("ShipTime");
-        return $model->findAllByShipId($this->ship_id);
+        return $model->findAllByShipId($this->ship_id, "weight_min", true);
     }
 
     /**
      * 配送先情報から送料を算出
      */
-    public function getShipFee($pref, $address1, $address2)
+    public function getShipFee($weight, $pref, $address1, $address2)
     {
-        $specials = $this->specialShips();
-        foreach ($specials as $special) {
-            if (empty($special->address_prefix) || preg_match("/^".preg_quote($special->address_prefix, "/")."/iu", $pref.$address1.$address2) > 0) {
-                return $special->ship_fee;
+        $shipWeights = $this->weightShips();
+        $shipFee = $this->ship_fee;
+        foreach ($shipWeights as $shipWeight) {
+            if ($weight > 0) {
+                if (!($shipWeight->weight_min > 0) || $shipWeight->weight_min < $weight) {
+                    if (!($shipWeight->weight_max > 0) || $shipWeight->weight_max > $weight) {
+                        $shipAddress = $shipWeight->addressShip($pref . $address1 . $address2);
+                        if ($shipAddress->ship_address_id > 0) {
+                            $shipFee = $shipAddress->ship_fee;
+                            break;
+                        } else {
+                            $shipFee = $shipWeight->ship_fee;
+                            break;
+                        }
+                    }
+                }
+            } else {
+                $shipAddress = $shipWeight->addressShip($pref . $address1 . $address2);
+                if ($shipAddress->ship_address_id > 0) {
+                    $shipFee = $shipAddress->ship_fee;
+                    break;
+                } else {
+                    $shipFee = $shipWeight->ship_fee;
+                    break;
+                }
             }
         }
-        return $this->ship_fee;
+        return $shipFee;
     }
 }

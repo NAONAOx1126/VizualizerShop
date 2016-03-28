@@ -23,14 +23,13 @@
  */
 
 /**
- * 注文詳細のモデルです。
+ * 宛先別配送のモデルです。
  *
  * @package VizualizerShop
  * @author Naohisa Minagawa <info@vizualizer.jp>
  */
-class VizualizerShop_Model_OrderDetail extends Vizualizer_Plugin_Model
+class VizualizerShop_Model_ShipAddress extends VizualizerShop_Model_MallModel
 {
-
     /**
      * コンストラクタ
      *
@@ -39,27 +38,16 @@ class VizualizerShop_Model_OrderDetail extends Vizualizer_Plugin_Model
     public function __construct($values = array())
     {
         $loader = new Vizualizer_Plugin("shop");
-        parent::__construct($loader->loadTable("OrderDetails"), $values);
+        parent::__construct($loader->loadTable("ShipAddresses"), $values);
     }
 
     /**
      * 主キーでデータを取得する。
      *
-     * @param $order_detail_id 注文詳細ID
+     * @param $ship_address_id 重量配送ID
      */
-    public function findByPrimaryKey($order_detail_id)
+    public function findByPrimaryKey($ship_address_id)
     {
-        $this->findBy(array("order_detail_id" => $order_detail_id));
-    }
-
-    /**
-     * 商品データを取得する。
-     */
-    public function productOption()
-    {
-        $loader = new Vizualizer_Plugin("shop");
-        $model = $loader->loadModel("ProductOption");
-        $model->findByPrimaryKey($this->product_option_id);
-        return $model;
+        $this->findBy(array("ship_address_id" => $ship_address_id));
     }
 }
