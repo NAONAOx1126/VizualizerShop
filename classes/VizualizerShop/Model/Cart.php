@@ -593,7 +593,9 @@ class VizualizerShop_Model_Cart extends VizualizerShop_Model_MallModel
             $subscription->subscription_status = VizualizerShop_Model_CustomerSubscription::STATUS_ACTIVE;
             $subscription->description = $this->description;
             $subscription->save();
-            $attr["order_id"] = $subscription->subscription_id;
+            $attr["customer"] = $this->customer->toArray();
+            $attr["customerShip"] = $this->customerShip->toArray();
+            $attr["order_id"] = "S" . sprintf("%09d", $subscription->customer_subscription_id);
             $attr["order_time"] = $subscription->subscription_time;
             $attr["order_details"] = array(array("product_name" => $subscription->subscription()->productOption()->getProductName(), "price" => $subscription->subscription()->price, "quantity" => "1"));
             $attr["next_delivery"] = $subscription->subscription()->getNextDelivery();
@@ -601,6 +603,7 @@ class VizualizerShop_Model_Cart extends VizualizerShop_Model_MallModel
             $attr["charge"] = $subscription->getCharge();
             $attr["ship_fee"] = $subscription->getShipFee() * $subscription->subscription()->orders;
             $attr["total"] = $attr["subtotal"] + $attr["charge"] + $attr["ship_fee"];
+            $attr["payment_name"] = $this->payment->payment_name;
 
             $mailTemplates = Vizualizer_Configure::get("mail_templates");
             if($sendmail && is_array($mailTemplates) && array_key_exists("order", $mailTemplates) && is_array($mailTemplates["order"])){
@@ -755,7 +758,15 @@ class VizualizerShop_Model_Cart extends VizualizerShop_Model_MallModel
                 }
 
                 $attr = Vizualizer::attr();
-                $attr["order_id"] = $order->order_id;
+                $orderData = $order->toArray();
+                foreach ($orderData as $key => $data) {
+                    if (substr($key, 0, 6) == "order_") {
+                        $orderData[substr($key, 6)] = $data;
+                    }
+                }
+                $attr["customer"] = $orderData;
+                $attr["customerShip"] = $orderShip->toArray();
+                $attr["order_id"] = "P" . sprintf("%09d", $order->order_id);
                 $attr["order_time"] = $order->order_time;
                 $attr["order_details"] = $orderDetailData;
                 $subscription = $loader->loadModel("Subscription");
@@ -764,6 +775,7 @@ class VizualizerShop_Model_Cart extends VizualizerShop_Model_MallModel
                 $attr["charge"] = $order->charge;
                 $attr["ship_fee"] = $order->ship_fee;
                 $attr["total"] = $order->total;
+                $attr["payment_name"] = $this->payment->payment_name;
 
                 $mailTemplates = Vizualizer_Configure::get("mail_templates");
                 if($sendmail && is_array($mailTemplates) && array_key_exists("order", $mailTemplates) && is_array($mailTemplates["order"])){
