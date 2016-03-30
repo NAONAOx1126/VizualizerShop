@@ -85,7 +85,7 @@ class VizualizerShop_Model_OrderShip extends Vizualizer_Plugin_Model
         parent::save();
 
         $mailTemplates = Vizualizer_Configure::get("mail_templates");
-        if($sendmail && is_array($mailTemplates) && array_key_exists("ship", $mailTemplates) && is_array($mailTemplates["ship"])){
+        if($shipped && is_array($mailTemplates) && array_key_exists("ship", $mailTemplates) && is_array($mailTemplates["ship"])){
             // メールの内容を作成
             $title = $mailTemplates["ship"]["title"];
             $templateName = $mailTemplates["ship"]["template"];
