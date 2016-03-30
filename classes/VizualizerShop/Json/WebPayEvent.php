@@ -88,6 +88,7 @@ class VizualizerShop_Json_WebPayEvent
                     $attr["subtotal"] = $customerSubscription->getSubtotal();
                     $attr["charge"] = $customerSubscription->getCharge();
                     $attr["ship_fee"] = $customerSubscription->getShipFee() * $subscription->orders;
+                    $attr["total"] = $attr["subtotal"] + $attr["charge"] + $attr["ship_fee"];
                     $attr["payment_name"] = $customerSubscription->payment()->payment_name;
                     $attr["company"] = $company->toArray();
                     $body = $template->fetch($templateName.".txt");
