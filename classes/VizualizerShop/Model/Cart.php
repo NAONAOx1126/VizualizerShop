@@ -613,8 +613,6 @@ class VizualizerShop_Model_Cart extends VizualizerShop_Model_MallModel
                 $this->logTemplateData();
                 $template = $attr["template"];
                 if(!empty($template)){
-                    $body = $template->fetch($templateName.".txt");
-
                     // ショップの情報を取得
                     $loader = new Vizualizer_Plugin("admin");
                     $company = $loader->loadModel("Company");
@@ -623,6 +621,8 @@ class VizualizerShop_Model_Cart extends VizualizerShop_Model_MallModel
                     }else{
                         $company->findBy(array());
                     }
+                    $attr["company"] = $company->toArray();
+                    $body = $template->fetch($templateName.".txt");
 
                     // 購入者にメール送信
                     $mail = new Vizualizer_Sendmail();
@@ -785,8 +785,6 @@ class VizualizerShop_Model_Cart extends VizualizerShop_Model_MallModel
                     $this->logTemplateData();
                     $template = $attr["template"];
                     if(!empty($template)){
-                        $body = $template->fetch($templateName.".txt");
-
                         // ショップの情報を取得
                         $loader = new Vizualizer_Plugin("admin");
                         $company = $loader->loadModel("Company");
@@ -795,6 +793,8 @@ class VizualizerShop_Model_Cart extends VizualizerShop_Model_MallModel
                         }else{
                             $company->findBy(array());
                         }
+                        $attr["company"] = $company->toArray();
+                        $body = $template->fetch($templateName.".txt");
 
                         // 購入者にメール送信
                         $mail = new Vizualizer_Sendmail();
