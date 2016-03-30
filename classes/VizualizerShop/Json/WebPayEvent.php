@@ -82,7 +82,7 @@ class VizualizerShop_Json_WebPayEvent
                     $attr["order_id"] = "S" . sprintf("%09d", $customerSubscription->customer_subscription_id);
                     $attr["order_time"] = $customerSubscription->subscription_time;
                     $attr["order_details"] = array(array("product_name" => $subscription->productOption()->getProductName(), "price" => $subscription->price, "quantity" => "1"));
-                    $attr["next_delivery"] = $customerSubscription->getNextDelivery();
+                    $attr["next_delivery"] = $subscription->getNextDelivery();
                     $attr["subtotal"] = $customerSubscription->getSubtotal();
                     $attr["charge"] = $customerSubscription->getCharge();
                     $attr["ship_fee"] = $customerSubscription->getShipFee() * $subscription->orders;
