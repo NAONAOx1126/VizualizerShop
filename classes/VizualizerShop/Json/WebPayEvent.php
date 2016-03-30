@@ -79,6 +79,8 @@ class VizualizerShop_Json_WebPayEvent
                     $customer = $loader->loadModel("Customer");
                     $customer->findByPrimaryKey($customerSubscription->customerShip()->customer_id);
 
+                    $attr["customer"] = $customer->toArray();
+                    $attr["customerShip"] = $customerSubscription->customerShip()->toArray();
                     $attr["order_id"] = "S" . sprintf("%09d", $customerSubscription->customer_subscription_id);
                     $attr["order_time"] = $customerSubscription->subscription_time;
                     $attr["order_details"] = array(array("product_name" => $subscription->productOption()->getProductName(), "price" => $subscription->price, "quantity" => "1"));
