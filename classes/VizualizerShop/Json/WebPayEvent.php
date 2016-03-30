@@ -165,7 +165,7 @@ class VizualizerShop_Json_WebPayEvent
         }
 
         // データを取得しJSONデコードを行う。
-        $requestBody = http_get_request_body();
+        $requestBody = file_get_contents("php://input");
         $data = json_decode($requestBody);
 
         // タイプを取得し、キャメルケース化してメソッド名とする。
