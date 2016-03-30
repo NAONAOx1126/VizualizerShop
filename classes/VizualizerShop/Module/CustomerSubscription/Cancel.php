@@ -58,10 +58,11 @@ class VizualizerShop_Module_CustomerSubscription_Cancel extends Vizualizer_Plugi
                 $customerSubscription->subscription_status = VizualizerShop_Model_CustomerSubscription::STATUS_CANCEL;
                 $customerSubscription->save();
 
-                if(Vizualizer_Configure::exists("suspend_mail_title") && Vizualizer_Configure::exists("suspend_mail_template")){
+                $mailTemplates = Vizualizer_Configure::get("mail_templates");
+                if(is_array($mailTemplates) && array_key_exists("suspend", $mailTemplates) && is_array($mailTemplates["suspend"])){
                     // メールの内容を作成
-                    $title = Vizualizer_Configure::get("suspend_mail_title");
-                    $templateName = Vizualizer_Configure::get("suspend_mail_template");
+                    $title = $mailTemplates["suspend"]["title"];
+                    $templateName = $mailTemplates["suspend"]["template"];
                     $attr = Vizualizer::attr();
                     $template = $attr["template"];
                     if(!empty($template)){
