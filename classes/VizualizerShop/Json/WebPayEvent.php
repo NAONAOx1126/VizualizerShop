@@ -79,13 +79,14 @@ class VizualizerShop_Json_WebPayEvent
                     $customer = $loader->loadModel("Customer");
                     $customer->findByPrimaryKey($customerSubscription->customerShip()->customer_id);
 
-                    $attr["order_id"] = $subscription->subscription_id;
+                    $attr["order_id"] = "S" . sprintf("%09d", $subscription->customer_subscription_id);
                     $attr["order_time"] = $subscription->subscription_time;
                     $attr["order_details"] = array(array("product_name" => $subscription->subscription()->productOption()->getProductName(), "price" => $subscription->subscription()->price, "quantity" => "1"));
                     $attr["next_delivery"] = $subscription->subscription()->getNextDelivery();
                     $attr["subtotal"] = $subscription->getSubtotal();
                     $attr["charge"] = $subscription->getCharge();
                     $attr["ship_fee"] = $subscription->getShipFee() * $subscription->subscription()->orders;
+                    $attr["company"] = $company->toArray();
                     $body = $template->fetch($templateName.".txt");
 
                     // 購入者にメール送信

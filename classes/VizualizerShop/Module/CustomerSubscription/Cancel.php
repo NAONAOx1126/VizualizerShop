@@ -65,8 +65,6 @@ class VizualizerShop_Module_CustomerSubscription_Cancel extends Vizualizer_Plugi
                     $attr = Vizualizer::attr();
                     $template = $attr["template"];
                     if(!empty($template)){
-                        $body = $template->fetch($templateName.".txt");
-
                         // ショップの情報を取得
                         $loader = new Vizualizer_Plugin("admin");
                         $company = $loader->loadModel("Company");
@@ -81,6 +79,19 @@ class VizualizerShop_Module_CustomerSubscription_Cancel extends Vizualizer_Plugi
                         $loader = new Vizualizer_Plugin("member");
                         $customer = $loader->loadModel("Customer");
                         $customer->findByPrimaryKey($customerSubscription->customerShip()->customer_id);
+
+                        $attr["company"] = $company->toArray();
+                        $attr["customer"] = $customerSubscription->customer()->toArray();
+                        $attr["customerShip"] = $customerSubscription->customerShip()->toArray();
+                        $attr["order_id"] = "S" . sprintf("%09d", $customerSubscription->customer_subscription_id);
+                        $attr["order_time"] = $customerSubscription->subscription_time;
+                        $attr["order_details"] = array(array("product_name" => $subscription->productOption()->getProductName(), "price" => $subscription->subscription()->price, "quantity" => "1"));
+                        $attr["next_delivery"] = $subscription->getNextDelivery();
+                        $attr["subtotal"] = $customerSubscription->getSubtotal();
+                        $attr["charge"] = $customerSubscription->getCharge();
+                        $attr["ship_fee"] = $customerSubscription->getShipFee() * $subscription->orders;
+                        $attr["total"] = $attr["subtotal"] + $attr["charge"] + $attr["ship_fee"];
+                        $body = $template->fetch($templateName.".txt");
 
                         // 購入者にメール送信
                         $mail = new Vizualizer_Sendmail();
