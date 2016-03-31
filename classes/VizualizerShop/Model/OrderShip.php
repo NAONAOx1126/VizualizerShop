@@ -89,20 +89,21 @@ class VizualizerShop_Model_OrderShip extends Vizualizer_Plugin_Model
             // メールの内容を作成
             $title = $mailTemplates["ship"]["title"];
             $templateName = $mailTemplates["ship"]["template"];
-            $this->logTemplateData();
+            $attr = Vizualizer::attr();
             $template = $attr["template"];
             if(!empty($template)){
                 // ショップの情報を取得
                 $loader = new Vizualizer_Plugin("admin");
                 $company = $loader->loadModel("Company");
-                if($this->isLimitedCompany() && $this->limitCompanyId() > 0){
-                    $company->findByPrimaryKey($this->limitCompanyId());
+                $order = $this->order();
+                if($order->isLimitedCompany() && $order->limitCompanyId() > 0){
+                    $company->findByPrimaryKey($order->limitCompanyId());
                 }else{
                     $company->findBy(array());
                 }
 
                 $attr["company"] = $company->toArray();
-                $attr["order"] = $this->order()->toArray();
+                $attr["order"] = $order->toArray();
                 $attr["orderShip"] = $this->toArray();
                 $data = $this->orderDetails();
                 $details = array();
@@ -110,6 +111,7 @@ class VizualizerShop_Model_OrderShip extends Vizualizer_Plugin_Model
                     $details[] = $item->toArray();
                 }
                 $attr["orderDetails"] = $details;
+				$this->logTemplateData();
                 $body = $template->fetch($templateName.".txt");
 
                 // 購入者にメール送信

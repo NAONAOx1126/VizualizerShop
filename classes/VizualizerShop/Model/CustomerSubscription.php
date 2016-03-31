@@ -144,9 +144,9 @@ class VizualizerShop_Model_CustomerSubscription extends Vizualizer_Plugin_Model
                 $orderTime = time();
             }else{
                 // 注文の指定があった場合は、2回目以降の配送扱いとなるため、調整額に合計額のマイナスを設定
-                while($cart->getTotal() !== 0){
-                    $cart->setAdjustment(- $cart->getTotal());
-                }
+                // while($cart->getTotal() !== 0){
+                //     $cart->setAdjustment(- $cart->getTotal());
+                // }
             }
 
             // 注文日時を変更
