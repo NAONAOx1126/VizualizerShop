@@ -40,6 +40,12 @@ class VizualizerShop_Module_Sales extends Vizualizer_Plugin_Module_List
         $list = $attr["orders"];
         $sales = array();
         foreach($list as $data){
+            $loader = new Vizualizer_Plugin("shop");
+	        $order = $loader->loadModel("Order");
+            if($order->isLimitedCompany() && $order->limitCompanyId() > 0 && $data->company_id != $order->limitCompanyId()){
+                continue;
+            }
+
             if ($post["summery_type1"] == "1") {
                 $key1 = date("d日", strtotime($data->order_time));
             } elseif ($post["summery_type1"] == "2") {
