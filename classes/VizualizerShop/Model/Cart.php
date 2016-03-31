@@ -634,7 +634,7 @@ class VizualizerShop_Model_Cart extends VizualizerShop_Model_MallModel
 
                     // ショップにメール送信
                     $mail = new Vizualizer_Sendmail();
-                    $mail->setFrom($this->customer->email);
+                    $mail->setFrom($this->customer->contact_email);
                     $mail->setTo($company->email);
                     $mail->setSubject($title);
                     $mail->addBody($body);
@@ -806,7 +806,7 @@ class VizualizerShop_Model_Cart extends VizualizerShop_Model_MallModel
 
                         // ショップにメール送信
                         $mail = new Vizualizer_Sendmail();
-                        $mail->setFrom($this->customer->email);
+                        $mail->setFrom($this->customer->contact_email);
                         $mail->setTo($company->email);
                         $mail->setSubject($title);
                         $mail->addBody($body);
