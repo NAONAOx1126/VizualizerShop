@@ -67,7 +67,7 @@ class VizualizerShop_Module_Order_DeliveryPdf extends Vizualizer_Plugin_Module_P
                 $this->startPage();
 
                 // タイトルを出力
-                $this->text(595 - 340, 60, 18, "納品書", true);
+                $this->text(595 - 340, 60, 18, "納　品　書", true);
                 // 注文IDと注文日を出力
                 $this->setFont($lightFont);
                 $this->boxtext(595 - 222, 26, 200, 10, 10, "注文ID：".sprintf("%010d", $order->order_code), false, "right");
@@ -117,7 +117,7 @@ class VizualizerShop_Module_Order_DeliveryPdf extends Vizualizer_Plugin_Module_P
                     $this->boxtext(595 - 571, 386 + $outputLines * 24, 54, 24, 9, $orderDetail->product_code, true, "center");
                     $this->boxtext(595 - 517, 386 + $outputLines * 24, 220, 24, 9, $orderDetail->product_name, true, "center");
                     $this->boxtext(595 - 297, 386 + $outputLines * 24, 98, 24, 9, "¥ ".number_format($orderDetail->price), true, "right");
-                    $this->boxtext(595 - 199, 386 + $outputLines * 24, 76, 24, 9, "¥ ".number_format($orderDetail->quantity), true, "center");
+                    $this->boxtext(595 - 199, 386 + $outputLines * 24, 76, 24, 9, number_format($orderDetail->quantity), true, "center");
                     $this->boxtext(595 - 123, 386 + $outputLines * 24, 101, 24, 9, "¥ ".number_format($orderDetail->price * $orderDetail->quantity), true, "right");
                     $outputLines ++;
                 }

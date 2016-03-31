@@ -51,8 +51,12 @@ class VizualizerShop_Module_CustomerSubscription_Cancel extends Vizualizer_Plugi
 
             try {
                 // WebPayの定期購入を削除
-                $webpay = new WebPay(Vizualizer_Configure::get(self::WEBPAY_SECRET_KEY));
-                $webpay->recursion->delete(array("id" => $customerSubscription->customer_subscription_code));
+                try {
+                    $webpay = new WebPay(Vizualizer_Configure::get(self::WEBPAY_SECRET_KEY));
+                    $webpay->recursion->delete(array("id" => $customerSubscription->customer_subscription_code));
+                } catch (Exception $e) {
+	                $this->debug($e->getMessage());
+                }
 
                 // ステータスをキャンセルに変更
                 $customerSubscription->subscription_status = VizualizerShop_Model_CustomerSubscription::STATUS_CANCEL;
@@ -86,12 +90,14 @@ class VizualizerShop_Module_CustomerSubscription_Cancel extends Vizualizer_Plugi
                         $attr["customerShip"] = $customerSubscription->customerShip()->toArray();
                         $attr["order_id"] = "S" . sprintf("%09d", $customerSubscription->customer_subscription_id);
                         $attr["order_time"] = $customerSubscription->subscription_time;
-                        $attr["order_details"] = array(array("product_name" => $subscription->productOption()->getProductName(), "price" => $subscription->subscription()->price, "quantity" => "1"));
+                        $attr["orderDetails"] = array(array("product_name" => $subscription->productOption()->getProductName(), "price" => $subscription->price, "quantity" => "1"));
                         $attr["next_delivery"] = $subscription->getNextDelivery();
                         $attr["subtotal"] = $customerSubscription->getSubtotal();
                         $attr["charge"] = $customerSubscription->getCharge();
                         $attr["ship_fee"] = $customerSubscription->getShipFee() * $subscription->orders;
                         $attr["total"] = $attr["subtotal"] + $attr["charge"] + $attr["ship_fee"];
+                        $attr["payment_name"] = $customerSubscription->payment()->payment_name;
+						$this->logTemplateData();
                         $body = $template->fetch($templateName.".txt");
 
                         // 購入者にメール送信
@@ -100,6 +106,7 @@ class VizualizerShop_Module_CustomerSubscription_Cancel extends Vizualizer_Plugi
                         $mail->setTo($customer->email);
                         $mail->setSubject($title);
                         $mail->addBody($body);
+                        $this->debug(print_r($mail, true));
                         $mail->send();
 
                         // ショップにメール送信
