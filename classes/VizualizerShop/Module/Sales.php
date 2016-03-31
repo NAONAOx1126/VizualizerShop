@@ -46,6 +46,8 @@ class VizualizerShop_Module_Sales extends Vizualizer_Plugin_Module_List
                 $key1 = date("m月", strtotime($data->order_time));
             } elseif ($post["summery_type1"] == "3") {
                 $key1 = $data->product_name;
+            } else {
+                $key1 = "";
             }
             if ($post["summery_type1"] != $post["summery_type2"]) {
                 if ($post["summery_type2"] == "1") {
