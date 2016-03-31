@@ -33,13 +33,23 @@ class VizualizerShop_Module_CustomerSubscription_Page extends Vizualizer_Plugin_
 
     function execute($params)
     {
+        $post = Vizualizer::request();
+        $attr = Vizualizer::attr();
         if ($params->get("customer_only", "0") === "1") {
-            $post = Vizualizer::request();
-            $attr = Vizualizer::attr();
             $search = $post["search"];
             $search["customer_id"] = $attr[VizualizerMember::KEY]->customer_id;
             $post->set("search", $search);
         }
+        $loader = new Vizualizer_Plugin("shop");
+        $subscription = $loader->loadModel("Subscription");
+        $subscriptions = $subscription->findAllBy(array());
+        $search = $post["search"];
+        $search["in:subscription_id"] = array(0);
+        foreach ($subscriptions as $subscription) {
+            $search["in:subscription_id"][] = $subscription->subscription_id;
+        }
+        $post->set("search", $search);
+
         $this->executeImpl($params, "Shop", "CustomerSubscription", $params->get("result", "customerSubscriptions"));
     }
 }
