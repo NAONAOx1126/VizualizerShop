@@ -82,12 +82,28 @@ class VizualizerShop_Model_Ship extends VizualizerShop_Model_MallModel
     }
 
     /**
+     * 商品オプションのデータを取得する。
+     */
+    public function addressShip($address)
+    {
+        $loader = new Vizualizer_Plugin("shop");
+        $model = $loader->loadModel("ShipAddress");
+        $addresses = $model->findAllBy(array("ship_id" => $this->ship_id, "ship_weight_id" => "0", "inpre:address_prefix" => $address), "LENGTH(address_prefix)", true);
+        return $addresses->current();
+    }
+
+    /**
      * 配送先情報から送料を算出
      */
     public function getShipFee($weight, $pref, $address1, $address2)
     {
+        $shipAddress = $this->addressShip($pref . $address1 . $address2);
+        if ($shipAddress->ship_address_id > 0) {
+            $shipFee = $shipAddress->ship_fee;
+        } else {
+            $shipFee = $this->ship_fee;
+        }
         $shipWeights = $this->weightShips();
-        $shipFee = $this->ship_fee;
         foreach ($shipWeights as $shipWeight) {
             if ($weight > 0) {
                 if (!($shipWeight->weight_min > 0) || $shipWeight->weight_min < $weight) {
@@ -101,15 +117,6 @@ class VizualizerShop_Model_Ship extends VizualizerShop_Model_MallModel
                             break;
                         }
                     }
-                }
-            } else {
-                $shipAddress = $shipWeight->addressShip($pref . $address1 . $address2);
-                if ($shipAddress->ship_address_id > 0) {
-                    $shipFee = $shipAddress->ship_fee;
-                    break;
-                } else {
-                    $shipFee = $shipWeight->ship_fee;
-                    break;
                 }
             }
         }
