@@ -58,6 +58,7 @@ class VizualizerShop_Model_ShipWeight extends VizualizerShop_Model_MallModel
     {
         $loader = new Vizualizer_Plugin("shop");
         $model = $loader->loadModel("ShipAddress");
-        return $model->findAllBy(array("ship_weight_id" => $this->ship_weight_id, "inpre:address_prefix" => $address), "LENGTH(address_prefix)", true);
+        $addresses = $model->findAllBy(array("ship_weight_id" => $this->ship_weight_id, "inpre:address_prefix" => $address), "LENGTH(address_prefix)", true);
+        return $addresses->current();
     }
 }
