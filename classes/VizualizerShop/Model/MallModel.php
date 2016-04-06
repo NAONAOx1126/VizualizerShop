@@ -63,13 +63,15 @@ class VizualizerShop_Model_MallModel extends Vizualizer_Plugin_Model
             // 結果的にIDを取得できない場合は*を返すようにする。
             self::$domainShopId = "*";
 
-            if($shopCode != $_SERVER["SERVER_NAME"]){
+            if (!empty($shopCode) && $shopCode != $_SERVER["SERVER_NAME"]){
                 // 正しくショップコードが取得できた場合、ショップコードから対応する法人を取得
                 $loader = new Vizualizer_Plugin("admin");
                 $model = $loader->loadModel("Company");
                 $model->findBy(array("company_code" => $shopCode));
                 if($model->company_id > 0){
                     self::$domainShopId = $model->company_id;
+                } else {
+                    self::$domainShopId = "0";
                 }
             }
         }
