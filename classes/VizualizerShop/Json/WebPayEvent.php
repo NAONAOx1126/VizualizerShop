@@ -58,7 +58,6 @@ class VizualizerShop_Json_WebPayEvent
                 Vizualizer_Logger::writeDebug("Ready for subscription payment succeeded mail.");
 
                 // メールの内容を作成
-                $title = $mailTemplates["subscription"]["title"];
                 $templateName = $mailTemplates["subscription"]["template"];
                 $attr = Vizualizer::attr();
                 $template = $attr["template"];
@@ -91,6 +90,7 @@ class VizualizerShop_Json_WebPayEvent
                     $attr["total"] = $attr["subtotal"] + $attr["charge"] + $attr["ship_fee"];
                     $attr["payment_name"] = $customerSubscription->payment()->payment_name;
                     $attr["company"] = $company->toArray();
+                    $title = "【".$company->company_name."】".$mailTemplates["subscription"]["title"];
                     $body = $template->fetch($templateName.".txt");
 
                     // 購入者にメール送信

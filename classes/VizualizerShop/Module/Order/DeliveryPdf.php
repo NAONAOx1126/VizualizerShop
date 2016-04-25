@@ -48,7 +48,14 @@ class VizualizerShop_Module_Order_DeliveryPdf extends Vizualizer_Plugin_Module_P
             $search["customer_id"] = $attr[VizualizerMember::KEY]->customer_id;
             $post->set("search", $search);
         }
+        $search_org = $search = $post["search"];
+        if (!empty($post["order_ids"])) {
+            $order_ids = explode(",", $post["order_ids"]);
+            $search["in:order_id"] = $order_ids;
+            $post->set("search", $search);
+        }
         $this->executeImpl($params, "Shop", "Order", $params->get("result", "orders"));
+        $post->set("search", $search_org);
         $orders = $attr["orders"];
 
         // ショップの情報を取得

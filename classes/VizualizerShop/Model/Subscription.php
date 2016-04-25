@@ -74,14 +74,39 @@ class VizualizerShop_Model_Subscription extends VizualizerShop_Model_MallModel
         if($date == null || $date < time()){
             $date = time();
         }
-        // 翌日以降から発送可能曜日に該当する日を取得
-        for($i = 1; $i <= 7; $i ++){
-            $targetDate = strtotime("+".$i." day", $date);
-            $weekday = strtolower(date("l", $targetDate));
-            if($this->$weekday){
-                return $targetDate;
+        // 実際の開始日を計算
+        $date += $this->order_margin * 24 * 3600;
+        $result = null;
+        // 当月の該当日を検索
+        for ($i = 1; $i <= $this->orders; $i ++) {
+            $weekKey = "week".$i;
+            $weekdayKey = "weekday".$i;
+            $firstWeekday = date("w", strtotime(date("Y-m-01")));
+            $targetDay = ($this->$weekKey - 1) * 7 + (($firstWeekday <= $this->$weekdayKey)?($this->$weekdayKey - $firstWeekday + 1):($this->$weekdayKey - $firstWeekday + 8));
+            $targetDate = strtotime(date("Y-m-".$targetDay." 23:59:59"));
+            if ($date < $targetDate && ($result == null || $targetDate < $result)) {
+                $result = $targetDate;
             }
         }
-        return null;
+        // 翌月の該当日を検索
+        for ($i = 1; $i <= $this->orders; $i ++) {
+            $weekKey = "week".$i;
+            $weekdayKey = "weekday".$i;
+            $firstWeekday = date("w", strtotime(date("Y-m-01", strtotime("+1 month"))));
+            $targetDay = ($this->$weekKey - 1) * 7 + (($firstWeekday <= $this->$weekdayKey)?($this->$weekdayKey - $firstWeekday + 1):($this->$weekdayKey - $firstWeekday + 8));
+            $targetDate = strtotime(date("Y-m-".$targetDay." 23:59:59", strtotime("+1 month")));
+            if ($date < $targetDate && ($result == null || $targetDate < $result)) {
+                $result = $targetDate;
+            }
+        }
+
+        return $result;
+    }
+
+    public function getWeekdayName($weekday) {
+        if ($weekday >= 0 && $weekday < 7) {
+            return mb_substr("日月火水木金土", $weekday, 1);
+        }
+        return "";
     }
 }
