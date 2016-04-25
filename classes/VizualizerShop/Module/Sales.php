@@ -42,7 +42,7 @@ class VizualizerShop_Module_Sales extends Vizualizer_Plugin_Module_List
         foreach($list as $data){
             $loader = new Vizualizer_Plugin("shop");
 	        $order = $loader->loadModel("Order");
-            if($order->isLimitedCompany() && $order->limitCompanyId() > 0 && $data->company_id != $order->limitCompanyId()){
+            if($attr[VizualizerAdmin::KEY]->role_id != "1" && $order->isLimitedCompany() && $order->limitCompanyId() > 0 && $data->company_id != $order->limitCompanyId()){
                 continue;
             }
 
