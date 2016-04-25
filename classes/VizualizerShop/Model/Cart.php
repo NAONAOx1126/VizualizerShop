@@ -624,7 +624,6 @@ class VizualizerShop_Model_Cart extends VizualizerShop_Model_MallModel
             $mailTemplates = Vizualizer_Configure::get("mail_templates");
             if($sendmail && is_array($mailTemplates) && array_key_exists("order", $mailTemplates) && is_array($mailTemplates["order"])){
                 // メールの内容を作成
-                $title = $mailTemplates["order"]["title"];
                 $templateName = $mailTemplates["order"]["template"];
                 $this->logTemplateData();
                 $template = $attr["template"];
@@ -638,6 +637,7 @@ class VizualizerShop_Model_Cart extends VizualizerShop_Model_MallModel
                         $company->findBy(array());
                     }
                     $attr["company"] = $company->toArray();
+                    $title = "【".$company->company_name."】".$mailTemplates["order"]["title"];
                     $body = $template->fetch($templateName.".txt");
 
                     // 購入者にメール送信
@@ -729,7 +729,7 @@ class VizualizerShop_Model_Cart extends VizualizerShop_Model_MallModel
             if ($order->order_id > 0) {
                 // 注文コード未設定の場合はデフォルトで注文IDを設定
                 if (empty($order->order_code)) {
-                    $order->order_code = $order->order_id;
+                    $order->order_code = sprintf("%010d", $order->order_id);
                     $order->update();
                 }
 
@@ -803,7 +803,6 @@ class VizualizerShop_Model_Cart extends VizualizerShop_Model_MallModel
                 $mailTemplates = Vizualizer_Configure::get("mail_templates");
                 if($sendmail && is_array($mailTemplates) && array_key_exists("order", $mailTemplates) && is_array($mailTemplates["order"])){
                     // メールの内容を作成
-                    $title = $mailTemplates["order"]["title"];
                     $templateName = $mailTemplates["order"]["template"];
                     $this->logTemplateData();
                     $template = $attr["template"];
@@ -817,6 +816,7 @@ class VizualizerShop_Model_Cart extends VizualizerShop_Model_MallModel
                             $company->findBy(array());
                         }
                         $attr["company"] = $company->toArray();
+                        $title = "【".$company->company_name."】".$mailTemplates["order"]["title"];
                         $body = $template->fetch($templateName.".txt");
 
                         // 購入者にメール送信

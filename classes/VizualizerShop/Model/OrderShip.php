@@ -87,7 +87,6 @@ class VizualizerShop_Model_OrderShip extends Vizualizer_Plugin_Model
         $mailTemplates = Vizualizer_Configure::get("mail_templates");
         if($shipped && is_array($mailTemplates) && array_key_exists("ship", $mailTemplates) && is_array($mailTemplates["ship"])){
             // メールの内容を作成
-            $title = $mailTemplates["ship"]["title"];
             $templateName = $mailTemplates["ship"]["template"];
             $attr = Vizualizer::attr();
             $template = $attr["template"];
@@ -112,7 +111,8 @@ class VizualizerShop_Model_OrderShip extends Vizualizer_Plugin_Model
                 }
                 $attr["orderDetails"] = $details;
 				$this->logTemplateData();
-                $body = $template->fetch($templateName.".txt");
+                $title = "【".$company->company_name."】".$mailTemplates["ship"]["title"];
+				$body = $template->fetch($templateName.".txt");
 
                 // 購入者にメール送信
                 $mail = new Vizualizer_Sendmail();

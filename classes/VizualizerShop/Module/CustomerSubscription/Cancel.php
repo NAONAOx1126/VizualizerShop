@@ -65,7 +65,6 @@ class VizualizerShop_Module_CustomerSubscription_Cancel extends Vizualizer_Plugi
                 $mailTemplates = Vizualizer_Configure::get("mail_templates");
                 if(is_array($mailTemplates) && array_key_exists("suspend", $mailTemplates) && is_array($mailTemplates["suspend"])){
                     // メールの内容を作成
-                    $title = $mailTemplates["suspend"]["title"];
                     $templateName = $mailTemplates["suspend"]["template"];
                     $attr = Vizualizer::attr();
                     $template = $attr["template"];
@@ -98,7 +97,8 @@ class VizualizerShop_Module_CustomerSubscription_Cancel extends Vizualizer_Plugi
                         $attr["total"] = $attr["subtotal"] + $attr["charge"] + $attr["ship_fee"];
                         $attr["payment_name"] = $customerSubscription->payment()->payment_name;
 						$this->logTemplateData();
-                        $body = $template->fetch($templateName.".txt");
+                        $title = "【".$company->company_name."】".$mailTemplates["suspend"]["title"];
+						$body = $template->fetch($templateName.".txt");
 
                         // 購入者にメール送信
                         $mail = new Vizualizer_Sendmail();
