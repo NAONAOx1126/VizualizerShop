@@ -30,6 +30,8 @@
  */
 class VizualizerShop_Module_Order_Download extends Vizualizer_Plugin_Module_Download
 {
+    private $search_org;
+
     private $orderStatuses;
     private $shipmentStatuses;
     private $paymentStatuses;
@@ -41,14 +43,13 @@ class VizualizerShop_Module_Order_Download extends Vizualizer_Plugin_Module_Down
         $this->orderStatuses = array("仮注文", "注文済み", "入荷待ち", "保留", "顧客問い合わせ中", "処理完了");
         $this->paymentStatuses = array("未決済", "決済失敗", "決済完了");
         $this->shipmentStatuses = array("発送待ち", "発送保留", "発送済み", "返送／再発送待ち");
-        $search_org = $search = $post["search"];
+        $this->search_org = $search = $post["search"];
         if (!empty($post["order_ids"])) {
             $order_ids = explode(",", $post["order_ids"]);
             $search["in:order_id"] = $order_ids;
             $post->set("search", $search);
         }
         $this->executeImpl($params, "Shop", "OrderView", $result);
-        $post->set("search", $search_org);
     }
 
     protected function filterData($data){
@@ -56,5 +57,10 @@ class VizualizerShop_Module_Order_Download extends Vizualizer_Plugin_Module_Down
         $data->payment_status_name = $this->paymentStatuses[$data->payment_status];
         $data->shipment_status_name = $this->shipmentStatuses[$data->shipment_status];
         return $data;
+    }
+
+    protected function postprocess()
+    {
+        $post->set("search", $this->search_org);
     }
 }
