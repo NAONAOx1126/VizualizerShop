@@ -61,6 +61,7 @@ class VizualizerShop_Module_Order_Download extends Vizualizer_Plugin_Module_Down
 
     protected function postprocess()
     {
+        $post = Vizualizer::request();
         $post->set("search", $this->search_org);
     }
 }
