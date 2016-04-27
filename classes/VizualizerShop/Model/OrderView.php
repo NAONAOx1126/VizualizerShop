@@ -28,7 +28,7 @@
  * @package VizualizerShop
  * @author Naohisa Minagawa <info@vizualizer.jp>
  */
-class VizualizerShop_Model_OrderView extends Vizualizer_Plugin_MallModel
+class VizualizerShop_Model_OrderView extends VizualizerShop_Model_MallModel
 {
 
     /**
