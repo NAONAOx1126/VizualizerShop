@@ -126,6 +126,9 @@ class VizualizerShop_Model_CustomerSubscription extends Vizualizer_Plugin_Model
             // 顧客情報をカートに設定
             $cart->setCustomer($this->customer());
 
+            // 顧客購読IDを設定
+            $cart->setCustomerSubscriptionId($this->customer_subscription_id);
+
             // 配送先情報をカートに設定
             $cart->setCustomerShip($this->customerShip());
 
