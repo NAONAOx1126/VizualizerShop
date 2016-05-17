@@ -148,6 +148,22 @@ class VizualizerShop_Model_Cart extends VizualizerShop_Model_MallModel
     }
 
     /**
+     * 顧客購読IDを設定
+     */
+    public function setCustomerSubscriptionId($customer_subscription_id)
+    {
+        $this->customer_subscription_id = $customer_subscription_id;
+    }
+
+    /**
+     * 顧客購読IDを取得
+     */
+    public function getCustomerSubscriptionId($customer_subscription_id)
+    {
+        return $this->customer_subscription_id;
+    }
+
+    /**
      * 購読を購読IDから設定
      */
     public function setSubscriptionById($subscription_id)
@@ -685,6 +701,9 @@ class VizualizerShop_Model_Cart extends VizualizerShop_Model_MallModel
             $order = $loader->loadModel("Order");
             $order->order_code = $order_code;
             $order->customer_id = $this->customer->customer_id;
+            if ($this->customer_subscription_id > 0) {
+                $order->customer_subscription_id = $this->customer_subscription_id;
+            }
             $order->order_company_name = $this->customer->company_name;
             $order->order_division_name = $this->customer->division_name;
             $order->order_sei = $this->customer->sei;
