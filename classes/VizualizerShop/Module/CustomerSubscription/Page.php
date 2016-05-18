@@ -50,6 +50,6 @@ class VizualizerShop_Module_CustomerSubscription_Page extends Vizualizer_Plugin_
         }
         $post->set("search", $search);
 
-        $this->executeImpl($params, "Shop", "CustomerSubscription", $params->get("result", "customerSubscriptions"));
+        $this->executeImpl($params, "Shop", "SubscriptionView", $params->get("result", "customerSubscriptions"));
     }
 }
