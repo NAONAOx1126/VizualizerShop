@@ -28,7 +28,7 @@
  * @package VizualizerShop
  * @author Naohisa Minagawa <info@vizualizer.jp>
  */
-class VizualizerShop_Model_CustomerSubscription extends Vizualizer_Plugin_Model
+class VizualizerShop_Model_SubscriptionView extends Vizualizer_Plugin_Model
 {
     const STATUS_INACTIVE = 0;
 
