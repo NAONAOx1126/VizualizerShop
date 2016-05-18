@@ -115,6 +115,26 @@ class VizualizerShop_Model_CustomerSubscription extends Vizualizer_Plugin_Model
     }
 
     /**
+     * 配送方法を取得する。
+     */
+    public function orders()
+    {
+        $loader = new Vizualizer_Plugin("shop");
+        $model = $loader->loadModel("Order");
+        return $model->findAllBy(array("customer_subscription_id" => $this->customer_subscription_id));
+    }
+
+    /**
+     * 配送方法を取得する。
+     */
+    public function orderViews()
+    {
+        $loader = new Vizualizer_Plugin("shop");
+        $model = $loader->loadModel("OrderView");
+        return $model->findAllBy(array("customer_subscription_id" => $this->customer_subscription_id));
+    }
+
+    /**
      * 定期購入の情報を元に注文を作成
      */
     public function purchase($orderTime = null, $order_code = ""){
